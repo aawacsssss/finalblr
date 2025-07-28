@@ -1,6 +1,4 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+/* Tailwind satırları kaldırıldı. Kendi özel CSS'iniz veya başka importlarınız varsa bırakabilirsiniz. */
 
 body {
   margin: 0;
