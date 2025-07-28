@@ -25,4 +25,39 @@ yarn-error.log*
 .idea/
 
 # OS
-Thumbs.db 
+Thumbs.db
+
+# Log files
+*.log
+logg.txt
+localhost-*.log
+
+# HTML files (eski dosyalar)
+*.html
+Footer.tsx
+Home.tsx
+footerornek.tsx
+
+# CSV files
+*.csv
+
+# SQL files
+*.sql
+
+# Text files
+*.txt
+
+# Backup directories
+/aboudeneme/
+/blr/
+/front/
+/server/
+
+# API directory (eğer backend değilse)
+/api/
+
+# Vercel config (eğer Netlify kullanıyorsanız)
+vercel.json
+
+# Scripts (eğer gerekli değilse)
+/scripts/ 
