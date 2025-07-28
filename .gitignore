@@ -1,63 +1,38 @@
-# Dependencies
-/node_modules
-/.pnp
-.pnp.js
+# Node ve derleme dosyaları
+node_modules/
+build/
+coverage/
+*.log
+*.csv
+*.sql
+*.txt
 
-# Testing
-/coverage
-
-# Production
-/build
-
-# Misc
+# IDE ve sistem dosyaları
+.vscode/
+.idea/
 .DS_Store
+Thumbs.db
+
+# Ortam dosyaları
+.env*
 .env.local
 .env.development.local
 .env.test.local
 .env.production.local
 
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
+# Yedek ve gereksiz klasörler
+/aboudeneme/
+/blr/
+/front/
+/server/
+/api/
+/scripts/
 
-# IDE
-.vscode/
-.idea/
-
-# OS
-Thumbs.db
-
-# Log files
-*.log
-logg.txt
-localhost-*.log
-
-# HTML files (eski dosyalar)
+# HTML ve örnek dosyalar
 *.html
 Footer.tsx
 Home.tsx
 footerornek.tsx
 
-# CSV files
-*.csv
-
-# SQL files
-*.sql
-
-# Text files
-*.txt
-
-# Backup directories
-/aboudeneme/
-/blr/
-/front/
-/server/
-
-# API directory (eğer backend değilse)
-/api/
-
-# Vercel config (eğer Netlify kullanıyorsanız)
-vercel.json
-
-# Scripts (eğer gerekli değilse)
-/scripts/ 
+# Vercel config (Netlify kullanıyorsan)
+vercel.json 
