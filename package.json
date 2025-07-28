@@ -59,7 +59,6 @@
     ]
   },
   "devDependencies": {
-    "autoprefixer": undefined,
     "postcss": "^8.5.6"
   }
 }
