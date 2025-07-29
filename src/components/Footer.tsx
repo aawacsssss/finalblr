@@ -284,14 +284,14 @@ const Footer: React.FC = () => {
                   <span style={{ fontSize: 22, color: '#fff' }}><i className="fas fa-phone-alt"></i></span>
                   <div>
                     <div style={{ fontWeight: 600, fontSize: 15 }}>Telefon</div>
-                    <a href="tel:+902826512030" style={{ color: '#e0e0e0', textDecoration: 'none', fontSize: 15 }}>0 (282) 651 20 30</a>
+                    <a href="tel:+905333681965" style={{ color: '#e0e0e0', textDecoration: 'none', fontSize: 15 }}>0533 368 1965</a>
                   </div>
                 </div>
                 <div style={{ background: 'rgba(255,255,255,0.07)', borderRadius: 12, padding: '1rem 1.2rem', display: 'flex', alignItems: 'center', gap: 12 }}>
                   <span style={{ fontSize: 22, color: '#fff' }}><i className="fas fa-envelope"></i></span>
                   <div>
                     <div style={{ fontWeight: 600, fontSize: 15 }}>E-posta</div>
-                    <a href="mailto:info@bilirinsaat.com.tr" style={{ color: '#e0e0e0', textDecoration: 'none', fontSize: 15 }}>info@bilirinsaat.com.tr</a>
+                    <a href="mailto:info@blrinsaat.com" style={{ color: '#e0e0e0', textDecoration: 'none', fontSize: 15 }}>info@blrinsaat.com</a>
                   </div>
                 </div>
                 <div style={{ background: 'rgba(255,255,255,0.07)', borderRadius: 12, padding: '1rem 1.2rem', display: 'flex', alignItems: 'center', gap: 12 }}>

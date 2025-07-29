@@ -222,8 +222,8 @@ const About: React.FC = () => {
                     <div className="col-lg-4">
                       <h5 className="c-w mb-3">İletişim Bilgileri</h5>
                       <p className="c-w mb-2"><strong>Adres:</strong> Kazımiye, Dumlupınar Cd. No:22, 59860 Çorlu/Tekirdağ</p>
-                      <p className="c-w mb-2"><strong>Telefon:</strong> +90 (282) 651 20 30</p>
-                      <p className="c-w mb-2"><strong>E-posta:</strong> info@blrinsaat.com.tr</p>
+                      <p className="c-w mb-2"><strong>Telefon:</strong> 0533 368 1965</p>
+                                              <p className="c-w mb-2"><strong>E-posta:</strong> info@blrinsaat.com</p>
                     </div>
                     <div className="col-lg-8">
                       <div className="office-map">

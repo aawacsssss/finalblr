@@ -3024,9 +3024,9 @@ const handleDeleteContent = async (id: number) => {
                                 page_name: 'contact',
                                 section_name: 'contact_info',
                                 title: 'İletişim Bilgileri',
-                                content: `📞 Telefon: 0282 651 20 30
-📱 Cep: 0542 180 59 59
-📧 E-posta: info@blrinsaat.com.tr
+                                content: `📞 Telefon: 0533 368 1965
+📱 Cep: 0533 368 1965
+📧 E-posta: info@blrinsaat.com
 📍 Adres: REŞADİYE MAHALLESİ ATATÜRK BULVARI CADDESİ NO:48/D ÇORLU/TEKİRDAĞ BİLİR İNŞAAT`,
                                 images: [],
                                 order_index: 2
