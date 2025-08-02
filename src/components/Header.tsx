@@ -88,8 +88,12 @@ const Header: React.FC = () => {
           }))
         });
 
-        // Her zaman varsayılan logo kullan - Supabase'den logo çekme
-        setHeaderLogo(DEFAULT_LOGO);
+        // Header logo ayarlarını yükle - site_settings kullan
+        if (settingsData && settingsData.facebook_url && settingsData.facebook_url.startsWith('HEADER_LOGO_DATA:')) {
+          setHeaderLogo(settingsData.facebook_url.replace('HEADER_LOGO_DATA:', ''));
+        } else {
+          setHeaderLogo(DEFAULT_LOGO);
+        }
 
         // Sosyal medya ayarlarını çek
         const { data: settingsData, error: settingsError } = await supabase
