@@ -218,8 +218,9 @@ const UpcomingProjects: React.FC = () => {
                       }}>
                         Başlayacak
                       </span>
-                    </div>
+                                         </div>
                   </div>
+                </Link>
                 </div>
               ))}
             </div>

@@ -218,8 +218,9 @@ const CompletedProjects: React.FC = () => {
                       }}>
                         Tamamlandı
                       </span>
-                    </div>
+                                         </div>
                   </div>
+                </Link>
                 </div>
               ))}
             </div>
