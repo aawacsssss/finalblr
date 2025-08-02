@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <!-- Ana Sayfa -->
+  <url>
+    <loc>https://www.blrinsaat.com.tr/</loc>
+    <lastmod>2024-01-15</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>1.0</priority>
+  </url>
+  
+  <!-- Hakkımızda -->
+  <url>
+    <loc>https://www.blrinsaat.com.tr/hakkimizda</loc>
+    <lastmod>2024-01-15</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  
+  <!-- Faaliyet Alanları -->
+  <url>
+    <loc>https://www.blrinsaat.com.tr/faaliyet-alanlari</loc>
+    <lastmod>2024-01-15</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  
+  <!-- Nurettin Bilir -->
+  <url>
+    <loc>https://www.blrinsaat.com.tr/nurettin-bilir</loc>
+    <lastmod>2024-01-15</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  
+  <!-- Ofis -->
+  <url>
+    <loc>https://www.blrinsaat.com.tr/ofis</loc>
+    <lastmod>2024-01-15</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  
+  <!-- İletişim -->
+  <url>
+    <loc>https://www.blrinsaat.com.tr/iletisim</loc>
+    <lastmod>2024-01-15</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  
+  <!-- Projeler -->
+  <url>
+    <loc>https://www.blrinsaat.com.tr/projeler</loc>
+    <lastmod>2024-01-15</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+  </url>
+  
+  <!-- Başlanacak Projeler -->
+  <url>
+    <loc>https://www.blrinsaat.com.tr/baslanacak-projeler</loc>
+    <lastmod>2024-01-15</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  
+  <!-- Devam Eden Projeler -->
+  <url>
+    <loc>https://www.blrinsaat.com.tr/devam-eden-projeler</loc>
+    <lastmod>2024-01-15</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  
+  <!-- Tamamlanan Projeler -->
+  <url>
+    <loc>https://www.blrinsaat.com.tr/tamamlanan-projeler</loc>
+    <lastmod>2024-01-15</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+</urlset> 

@@ -4,6 +4,7 @@
 import { Link } from 'react-router-dom';
 import { siteContentService, SiteContent } from '../services/supabaseService';
 import ReactMarkdown from 'react-markdown';
+import SEO from '../components/SEO';
 
 // HTML içeriğini güvenli şekilde render eden yardımcı fonksiyon
 const renderHTML = (htmlContent: string) => {
@@ -107,6 +108,12 @@ const About: React.FC = () => {
 
   return (
     <>
+      <SEO 
+        title="Hakkımızda - BLR İnşaat | 40+ Yıllık Deneyim | Çorlu İnşaat Firması"
+        description="BLR İnşaat hakkında detaylı bilgi. 1980'den beri Çorlu'da inşaat, yatırım ve gayrimenkul geliştirme alanlarında faaliyet gösteren güçlü ve köklü bir marka. Vizyonumuz, misyonumuz ve değerlerimiz."
+        keywords="BLR İnşaat hakkında, Çorlu inşaat firması, 40 yıllık deneyim, inşaat şirketi, müteahhit, yapı firması, Çorlu müteahhit"
+        canonical="https://www.blrinsaat.com.tr/hakkimizda"
+      />
       {/* Navigation Tabs - Header'a göre orantılı */}
       <div style={{ marginTop: '60px' }}>
         <section className="p-5">

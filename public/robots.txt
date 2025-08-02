@@ -1,0 +1,24 @@
+User-agent: *
+Allow: /
+
+# Sitemap
+Sitemap: https://www.blrinsaat.com.tr/sitemap.xml
+
+# Crawl-delay
+Crawl-delay: 1
+
+# Disallow admin pages
+Disallow: /admin
+Disallow: /admin/
+
+# Allow all other pages
+Allow: /hakkimizda
+Allow: /faaliyet-alanlari
+Allow: /nurettin-bilir
+Allow: /ofis
+Allow: /iletisim
+Allow: /projeler
+Allow: /baslanacak-projeler
+Allow: /devam-eden-projeler
+Allow: /tamamlanan-projeler
+Allow: /proje/ 

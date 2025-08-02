@@ -6,6 +6,7 @@ import 'swiper/css';
 import 'swiper/css/autoplay';
 import 'swiper/css/navigation';
 import { sliderService, siteContentService, Slider, SiteContent } from '../services/supabaseService';
+import SEO from '../components/SEO';
 
 const Home: React.FC = () => {
   const [sliders, setSliders] = useState<Slider[]>([]);
@@ -82,6 +83,12 @@ const Home: React.FC = () => {
 
   return (
     <>
+      <SEO 
+        title="BLR İnşaat - Çorlu'da Güvenilir İnşaat ve Gayrimenkul Firması | 1980'den Beri"
+        description="BLR İnşaat - Çorlu'da 1980 yılından bu yana inşaat, yatırım ve gayrimenkul geliştirme alanlarında faaliyet gösteren güçlü ve köklü bir marka. Konut projeleri, villa, apartman, ticari yapılar ve altyapı çalışmaları."
+        keywords="BLR İnşaat, Çorlu inşaat, Tekirdağ inşaat, gayrimenkul, konut projeleri, villa, apartman, inşaat firması, müteahhit, yapı firması, Çorlu müteahhit, Tekirdağ müteahhit"
+        canonical="https://www.blrinsaat.com.tr/"
+      />
       <style>{`
         @keyframes spin {
           0% { transform: rotate(0deg); }

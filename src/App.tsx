@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { HelmetProvider } from 'react-helmet-async';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
 import CssBaseline from '@mui/material/CssBaseline';
 import { AuthProvider } from './contexts/AuthContext';
@@ -92,20 +93,22 @@ function App() {
   }
 
   return (
-    <ThemeProvider theme={theme}>
-      <CssBaseline />
-      <AuthProvider>
-        <ProjectProvider>
-          <Router>
-            <Routes>
+    <HelmetProvider>
+      <ThemeProvider theme={theme}>
+        <CssBaseline />
+        <AuthProvider>
+          <ProjectProvider>
+            <Router>
+              <Routes>
               <Route path="/admin" element={<Admin />} />
               <Route path="/*" element={<AppRoutesWithLayout />} />
-            </Routes>
-          </Router>
-        </ProjectProvider>
-      </AuthProvider>
-    </ThemeProvider>
-  );
+                          </Routes>
+            </Router>
+          </ProjectProvider>
+        </AuthProvider>
+      </ThemeProvider>
+    </HelmetProvider>
+    );
 }
 
 export default App; 
