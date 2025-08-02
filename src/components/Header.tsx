@@ -88,19 +88,19 @@ const Header: React.FC = () => {
           }))
         });
 
-        // Header logo ayarlarını yükle - site_settings kullan
-        if (settingsData && settingsData.facebook_url && settingsData.facebook_url.startsWith('HEADER_LOGO_DATA:')) {
-          setHeaderLogo(settingsData.facebook_url.replace('HEADER_LOGO_DATA:', ''));
-        } else {
-          setHeaderLogo(DEFAULT_LOGO);
-        }
-
         // Sosyal medya ayarlarını çek
         const { data: settingsData, error: settingsError } = await supabase
           .from('site_settings')
           .select('*')
           .eq('id', 1)
           .single();
+
+        // Header logo ayarlarını yükle - site_settings kullan
+        if (settingsData && settingsData.facebook_url && settingsData.facebook_url.startsWith('HEADER_LOGO_DATA:')) {
+          setHeaderLogo(settingsData.facebook_url.replace('HEADER_LOGO_DATA:', ''));
+        } else {
+          setHeaderLogo(DEFAULT_LOGO);
+        }
 
         if (settingsError) {
           console.error('Site ayarları yükleme hatası:', settingsError);
