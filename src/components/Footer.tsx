@@ -40,9 +40,9 @@ const Footer: React.FC = () => {
   const [showKVKKModal, setShowKVKKModal] = useState(false);
   const [footerLogo, setFooterLogo] = useState<string>('/front/gorsel/genel/logo.png');
   const [socialMedia, setSocialMedia] = useState<SocialMediaSettings>({
-    facebookUrl: 'https://www.facebook.com/bilirinsaat',
-    instagramUrl: 'https://www.instagram.com/bilirinsaat',
-    youtubeUrl: 'https://www.youtube.com/@bilirinsaat'
+                facebookUrl: 'https://www.facebook.com/profile.php?id=61579125501611',
+            instagramUrl: 'https://www.instagram.com/blryapiinsaat/',
+            youtubeUrl: 'https://www.youtube.com/@blrinsaat'
   });
 
   useEffect(() => {
@@ -85,9 +85,9 @@ const Footer: React.FC = () => {
 
         if (settingsData && (settingsData.facebook_url || settingsData.instagram_url || settingsData.youtube_url)) {
           setSocialMedia({
-            facebookUrl: settingsData.facebook_url || 'https://www.facebook.com/bilirinsaat',
-            instagramUrl: settingsData.instagram_url || 'https://www.instagram.com/bilirinsaat',
-            youtubeUrl: settingsData.youtube_url || 'https://www.youtube.com/@bilirinsaat'
+            facebookUrl: settingsData.facebook_url || 'https://www.facebook.com/profile.php?id=61579125501611',
+            instagramUrl: settingsData.instagram_url || 'https://www.instagram.com/blryapiinsaat/',
+            youtubeUrl: settingsData.youtube_url || 'https://www.youtube.com/@blrinsaat'
           });
         }
         
@@ -110,6 +110,8 @@ const Footer: React.FC = () => {
   const upcomingProjects = allProjects.filter(p => p.status === 'baslayan');
   const ongoingProjects = allProjects.filter(p => p.status === 'devam');
   const completedProjects = allProjects.filter(p => p.status === 'bitmis');
+  
+  
 
   if (loading) {
     return (
@@ -170,7 +172,7 @@ const Footer: React.FC = () => {
                 <li style={{ marginBottom: '1rem' }}><a href="/baslanacak-projeler" style={{ color: '#e0e0e0', textDecoration: 'none' }}>Projelerimiz</a></li>
                 <li style={{ marginBottom: '1rem' }}><a href="/hakkimizda" style={{ color: '#e0e0e0', textDecoration: 'none' }}>Hakkımızda</a></li>
                 <li style={{ marginBottom: '1rem' }}><Link to="/sefa-kalkan" style={{ color: '#e0e0e0', textDecoration: 'none' }}>Nurettin Bilir</Link></li>
-                <li style={{ marginBottom: '1rem' }}><Link to="/ofis" style={{ color: '#e0e0e0', textDecoration: 'none' }}>Ofisimiz</Link></li>
+                <li style={{ marginBottom: '1rem' }}><a href="/hakkimizda#ofisimiz" style={{ color: '#e0e0e0', textDecoration: 'none' }}>Ofisimiz</a></li>
                 <li style={{ marginBottom: '1rem' }}><Link to="/iletisim" style={{ color: '#e0e0e0', textDecoration: 'none' }}>İletişim</Link></li>
               </ul>
             </div>
@@ -180,20 +182,21 @@ const Footer: React.FC = () => {
                 Projelerimiz
               </h3>
               <div style={{ display: 'flex', flexDirection: 'row', gap: '1rem' }}>
-                {upcomingProjects.length > 0 && (
-                  <div>
-                    <a href="/baslanacak-projeler" style={{ 
-                      color: '#e0e0e0', 
-                      textDecoration: 'none', 
-                      fontSize: 15, 
-                      fontWeight: 600,
-                      display: 'block',
-                      marginBottom: '0.5rem'
-                    }}>
-                      Başlanacak Projeler
-                    </a>
-                    <div style={{ marginLeft: '10px' }}>
-                      {upcomingProjects.slice(0, 3).map((project, index) => (
+                {/* Başlanacak Projeler */}
+                <div>
+                  <a href="/baslanacak-projeler" style={{ 
+                    color: '#e0e0e0', 
+                    textDecoration: 'none', 
+                    fontSize: 15, 
+                    fontWeight: 600,
+                    display: 'block',
+                    marginBottom: '0.5rem'
+                  }}>
+                    Başlanacak Projeler
+                  </a>
+                  <div style={{ marginLeft: '10px' }}>
+                    {upcomingProjects.length > 0 ? (
+                      upcomingProjects.map((project, index) => (
                         <div key={index} style={{ marginBottom: '0.3rem' }}>
                           <a href={`/proje/${project.id}`} style={{ 
                             color: '#b0b0b0', 
@@ -204,25 +207,30 @@ const Footer: React.FC = () => {
                             • {project.title}
                           </a>
                         </div>
-                      ))}
-                    </div>
+                      ))
+                    ) : (
+                      <div style={{ color: '#b0b0b0', fontSize: 13 }}>
+                        Henüz başlanacak proje yok
+                      </div>
+                    )}
                   </div>
-                )}
+                </div>
                 
-                {ongoingProjects.length > 0 && (
-                  <div>
-                    <a href="/devam-eden-projeler" style={{ 
-                      color: '#e0e0e0', 
-                      textDecoration: 'none', 
-                      fontSize: 15, 
-                      fontWeight: 600,
-                      display: 'block',
-                      marginBottom: '0.5rem'
-                    }}>
-                      Devam Eden Projeler
-                    </a>
-                    <div style={{ marginLeft: '10px' }}>
-                      {ongoingProjects.slice(0, 3).map((project, index) => (
+                {/* Devam Eden Projeler */}
+                <div>
+                  <a href="/devam-eden-projeler" style={{ 
+                    color: '#e0e0e0', 
+                    textDecoration: 'none', 
+                    fontSize: 15, 
+                    fontWeight: 600,
+                    display: 'block',
+                    marginBottom: '0.5rem'
+                  }}>
+                    Devam Eden Projeler
+                  </a>
+                  <div style={{ marginLeft: '10px' }}>
+                    {ongoingProjects.length > 0 ? (
+                      ongoingProjects.map((project, index) => (
                         <div key={index} style={{ marginBottom: '0.3rem' }}>
                           <a href={`/proje/${project.id}`} style={{ 
                             color: '#b0b0b0', 
@@ -233,25 +241,30 @@ const Footer: React.FC = () => {
                             • {project.title}
                           </a>
                         </div>
-                      ))}
-                    </div>
+                      ))
+                    ) : (
+                      <div style={{ color: '#b0b0b0', fontSize: 13 }}>
+                        Devam eden proje yok
+                      </div>
+                    )}
                   </div>
-                )}
+                </div>
                 
-                {completedProjects.length > 0 && (
-                  <div>
-                    <a href="/bitmis-projeler" style={{ 
-                      color: '#e0e0e0', 
-                      textDecoration: 'none', 
-                      fontSize: 15, 
-                      fontWeight: 600,
-                      display: 'block',
-                      marginBottom: '0.5rem'
-                    }}>
-                      Bitmiş Projeler
-                    </a>
-                    <div style={{ marginLeft: '10px' }}>
-                      {completedProjects.slice(0, 3).map((project, index) => (
+                {/* Bitmiş Projeler */}
+                <div>
+                  <a href="/bitmis-projeler" style={{ 
+                    color: '#e0e0e0', 
+                    textDecoration: 'none', 
+                    fontSize: 15, 
+                    fontWeight: 600,
+                    display: 'block',
+                    marginBottom: '0.5rem'
+                  }}>
+                    Bitmiş Projeler
+                  </a>
+                  <div style={{ marginLeft: '10px' }}>
+                    {completedProjects.length > 0 ? (
+                      completedProjects.map((project, index) => (
                         <div key={index} style={{ marginBottom: '0.3rem' }}>
                           <a href={`/proje/${project.id}`} style={{ 
                             color: '#b0b0b0', 
@@ -262,10 +275,14 @@ const Footer: React.FC = () => {
                             • {project.title}
                           </a>
                         </div>
-                      ))}
-                    </div>
+                      ))
+                    ) : (
+                      <div style={{ color: '#b0b0b0', fontSize: 13 }}>
+                        Bitmiş proje yok
+                      </div>
+                    )}
                   </div>
-                )}
+                </div>
                 
                 {allProjects.length === 0 && (
                   <div style={{ color: '#b0b0b0', fontSize: 13 }}>
@@ -357,6 +374,12 @@ const Footer: React.FC = () => {
               .footer-projects-grid .title {
                 font-size: 16px !important;
                 margin-bottom: 10px !important;
+              }
+              
+              /* Projeler bölümü için responsive */
+              .footer-main-row > div:nth-child(3) > div {
+                flex-direction: column !important;
+                gap: 1.5rem !important;
               }
             }
             @media (max-width: 600px) {

@@ -5,9 +5,71 @@ import { Link } from 'react-router-dom';
 import { siteContentService, SiteContent } from '../services/supabaseService';
 import ReactMarkdown from 'react-markdown';
 
+// HTML içeriğini güvenli şekilde render eden yardımcı fonksiyon
+const renderHTML = (htmlContent: string) => {
+  return <div dangerouslySetInnerHTML={{ __html: htmlContent }} />;
+};
+
 const About: React.FC = () => {
   const [contents, setContents] = useState<SiteContent[]>([]);
   const [loading, setLoading] = useState(true);
+  const [lightboxOpen, setLightboxOpen] = useState(false);
+  const [lightboxImages, setLightboxImages] = useState<string[]>([]);
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
+
+  // Varsayılan ofis görselleri
+  const defaultOfficeImages = [
+    "https://images.unsplash.com/photo-1497366216548-37526070297c?w=600&h=450&fit=crop",
+    "https://images.unsplash.com/photo-1560472354-b33ff0c44a43?w=600&h=450&fit=crop",
+    "https://images.unsplash.com/photo-1554473675-d0397389e0d8?w=600&h=450&fit=crop"
+  ];
+
+  const openLightbox = (index: number, images: string[]) => {
+    setLightboxImages(images);
+    setCurrentImageIndex(index);
+    setLightboxOpen(true);
+  };
+
+  const closeLightbox = () => {
+    setLightboxOpen(false);
+  };
+
+  const nextImage = () => {
+    setCurrentImageIndex((prev) => (prev + 1) % lightboxImages.length);
+  };
+
+  const prevImage = () => {
+    setCurrentImageIndex((prev) => (prev - 1 + lightboxImages.length) % lightboxImages.length);
+  };
+
+  // Touch events for mobile swipe
+  const [touchStart, setTouchStart] = useState<number | null>(null);
+  const [touchEnd, setTouchEnd] = useState<number | null>(null);
+
+  const minSwipeDistance = 50;
+
+  const onTouchStart = (e: React.TouchEvent) => {
+    setTouchEnd(null);
+    setTouchStart(e.targetTouches[0].clientX);
+  };
+
+  const onTouchMove = (e: React.TouchEvent) => {
+    setTouchEnd(e.targetTouches[0].clientX);
+  };
+
+  const onTouchEnd = () => {
+    if (!touchStart || !touchEnd) return;
+    const distance = touchStart - touchEnd;
+    const isLeftSwipe = distance > minSwipeDistance;
+    const isRightSwipe = distance < -minSwipeDistance;
+
+    if (isLeftSwipe) {
+      nextImage();
+    }
+    if (isRightSwipe) {
+      prevImage();
+    }
+  };
 
   useEffect(() => {
     const loadData = async () => {
@@ -90,8 +152,10 @@ const About: React.FC = () => {
                 <div className="col-lg-6 m-a pc-p-70 c-w content-wrapper">
                                      <div className="blr-title-2">Hakkımızda</div>
                   <div className="markdown-content">
-                    <ReactMarkdown>
-                      {getContentBySection('company_info')?.content || `
+                    {getContentBySection('company_info')?.content ? 
+                      renderHTML(getContentBySection('company_info')?.content || '') :
+                      <ReactMarkdown>
+                        {`
                         BLR İnşaat olarak, 1980 yılından bu yana başta inşaat ve yatırım sektörü olmak üzere gayrimenkul geliştirme, gıda ve diğer çeşitli alanlarda faaliyet gösteren güçlü ve köklü bir marka olarak hizmet vermekteyiz. 40 yılı aşkın birikimimiz, sağlam ticari tecrübemiz ve yenilikçi vizyonumuzla bulunduğumuz her sektörde öncü olma hedefiyle çalışmalarımızı aralıksız sürdürüyoruz.
 
                         Bizim için güvene dayalı ticaret anlayışı sadece bir tercih değil; aynı zamanda bir kurumsal değer ve vazgeçilmez bir prensiptir. Bu doğrultuda, çözüm odaklı yaklaşımımız ve sürdürülebilirlik ilkemizle iş dünyasına değer katmaya devam ediyoruz. Her projemizde topluma, doğaya ve ekonomiye olan sorumluluğumuzu ön planda tutarak yenilikçi fikirlerimizle sektörümüzde fark yaratmayı amaçlıyoruz.
@@ -102,7 +166,8 @@ const About: React.FC = () => {
 
                         Köklü geçmişimizden aldığımız güç ve yenilikçi çözümlerimizle sizlere değer katmaya, öncü projelerle sektörümüzde fark yaratmaya ve güvenle büyüyen bir marka olmaya devam edeceğiz.
                       `}
-                    </ReactMarkdown>
+                      </ReactMarkdown>
+                    }
                   </div>
                 </div>
                 <div className="col-lg-6">
@@ -110,7 +175,7 @@ const About: React.FC = () => {
                     loading="lazy" 
                     className="prj" 
                     alt="BLR İnşaat Kurumsal" 
-                    src={getContentBySection('main_image')?.images?.[0] || "/front/gorsel/genel/blr-insaat-2.jpg"}
+                    src={getContentBySection('main_image')?.images?.[0] || "/front/gorsel/genel/logo.png"}
                   />
                 </div>
               </div>
@@ -122,42 +187,54 @@ const About: React.FC = () => {
                     loading="lazy" 
                     className="prj" 
                     alt="BLR İnşaat Vizyon" 
-                    src="https://images.unsplash.com/photo-1449824913935-59a10b8d2000?auto=format&fit=crop&w=800&q=80"
+                    src={getContentBySection('vision')?.images?.[0] || "https://images.unsplash.com/photo-1449824913935-59a10b8d2000?auto=format&fit=crop&w=800&q=80"}
                     style={{
                       objectFit: 'cover',
                       height: '400px',
                       width: '100%'
                     }}
+                    onError={(e) => {
+                      const target = e.target as HTMLImageElement;
+                      target.src = "https://images.unsplash.com/photo-1449824913935-59a10b8d2000?auto=format&fit=crop&w=800&q=80";
+                    }}
                   />
                 </div>
                 <div className="col-lg-6 m-a pc-p-30 c-w content-wrapper">
-                                     <div className="blr-subtitle">Vizyonumuz</div>
+                  <div className="blr-title-2">Vizyonumuz</div>
                   <div className="markdown-content">
-                    <ReactMarkdown>
-                      {getContentBySection('vision')?.content || `
-                        Geleceğe dair vizyonumuz, sadece sektörel standartları yakalamak değil; aynı zamanda bu standartları belirleyen ve ilham veren projeler ortaya koymaktır.
+                    {getContentBySection('vision')?.content ? 
+                      renderHTML(getContentBySection('vision')?.content || '') :
+                      <ReactMarkdown>
+                        {`
+                        BLR İnşaat olarak, 40 yılı aşkın deneyimimizle inşaat sektöründe güvenilir ve kaliteli hizmet sunmaya devam ediyoruz. Geleceğe dair vizyonumuz, sadece sektörel standartları yakalamak değil; aynı zamanda bu standartları belirleyen ve ilham veren projeler ortaya koymaktır.
 
                         Her projemizde topluma, doğaya ve ekonomiye olan sorumluluğumuzu ön planda tutarak yenilikçi fikirlerimizle sektörümüzde fark yaratmayı amaçlıyoruz. Kent yaşamına değer katan özgün, modern ve güvenilir yaşam alanları inşa ederken bireylerin ve ailelerin huzurla yaşayabileceği ortamlar oluşturmayı ilke ediniyoruz.
 
                         Köklü geçmişimizden aldığımız güç ve yenilikçi çözümlerimizle sizlere değer katmaya, öncü projelerle sektörümüzde fark yaratmaya ve güvenle büyüyen bir marka olmaya devam edeceğiz.
                       `}
-                    </ReactMarkdown>
+                      </ReactMarkdown>
+                    }
                   </div>
                 </div>
               </div>
 
               {/* Misyon Bölümü */}
               <div className="row mb-5 rotate">
-                <div className="col-lg-6 m-a pc-p-30 c-w content-wrapper">
-                                     <div className="blr-subtitle">Misyonumuz</div>
+                <div className="col-lg-6 m-a pc-p-70 c-w content-wrapper">
+                  <div className="blr-title-2">Misyonumuz</div>
                   <div className="markdown-content">
-                    <ReactMarkdown>
-                      {getContentBySection('mission')?.content || `
+                    {getContentBySection('mission')?.content ? 
+                      renderHTML(getContentBySection('mission')?.content || '') :
+                      <ReactMarkdown>
+                        {`
                         Kaliteli ve güvenilir projelerle müşterilerimizin hayallerini gerçeğe dönüştürmek, yaşam kalitesini artıran modern yaşam alanları oluşturmak temel misyonumuzdur. Geniş yatırım araçlarımız ve kapsamlı hizmet ağımız sayesinde kârlı yatırımlar geliştirmeyi, bu yatırımları hayata geçirirken toplumun ihtiyaçlarına uygun projeler üretmeyi önceliğimiz olarak görüyoruz.
 
                         Bizim için güvene dayalı ticaret anlayışı sadece bir tercih değil; aynı zamanda bir kurumsal değer ve vazgeçilmez bir prensiptir. Bugün, binlerce kişiye hem ticari hem de sosyal anlamda hizmet sunmanın gururunu yaşıyoruz.
+
+                        Modern yaşam alanları oluşturma amacıyla çeşitli konut projeleri geliştirmekteyiz. Bu projelerde konfor, güvenlik ve estetik unsurlarını bir araya getirerek yaşam kalitesini artırmayı hedeflemekteyiz.
                       `}
-                    </ReactMarkdown>
+                      </ReactMarkdown>
+                    }
                   </div>
                 </div>
                 <div className="col-lg-6">
@@ -165,70 +242,121 @@ const About: React.FC = () => {
                     loading="lazy" 
                     className="prj" 
                     alt="BLR İnşaat Misyon" 
-                    src="https://images.unsplash.com/photo-1560518883-ce09059eeffa?auto=format&fit=crop&w=800&q=80"
-                    style={{
-                      objectFit: 'cover',
-                      height: '400px',
-                      width: '100%'
+                    src={getContentBySection('mission')?.images?.[0] || "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&w=800&q=80"}
+                    onError={(e) => {
+                      const target = e.target as HTMLImageElement;
+                      target.src = "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&w=800&q=80";
                     }}
                   />
                 </div>
               </div>
 
+
+
               {/* Ofisimiz Bölümü */}
               <div className="row mb-5">
                 <div className="col-lg-12">
-                                     <div className="blr-title-2 text-center mb-4" id="ofisimiz">Ofisimiz</div>
-                  <p className="text-center c-w mb-5">Modern ve konforlu ofis alanımızda müşterilerimize en iyi hizmeti sunmak için çalışıyoruz.</p>
+                  <div className="blr-title-2 text-center mb-4" id="ofisimiz">Ofisimiz</div>
+                  <div className="markdown-content text-center c-w mb-5">
+                    <ReactMarkdown>
+                      {getContentBySection('office')?.content || 'Modern ve konforlu ofis alanımızda müşterilerimize en iyi hizmeti sunmak için çalışıyoruz.'}
+                    </ReactMarkdown>
+                  </div>
                 </div>
               </div>
 
               {/* Ofis Fotoğrafları Grid */}
               <div className="row mb-5">
-                <div className="col-lg-4 col-md-6 mb-4">
-                  <div className="office-image-box">
-                    <img 
-                      src="https://images.unsplash.com/photo-1497366216548-37526070297c?w=600&h=450&fit=crop"
-                      alt="Ofis dış görünüm"
-                      className="office-img"
-                    />
-                  </div>
-                </div>
-                <div className="col-lg-4 col-md-6 mb-4">
-                  <div className="office-image-box">
-                    <img 
-                      src="https://images.unsplash.com/photo-1560472354-b33ff0c44a43?w=600&h=450&fit=crop"
-                      alt="Ofis iç mekan"
-                      className="office-img"
-                    />
-                  </div>
-                </div>
-                <div className="col-lg-4 col-md-6 mb-4">
-                  <div className="office-image-box">
-                    <img 
-                      src="https://images.unsplash.com/photo-1554473675-d0397389e0d8?w=600&h=450&fit=crop"
-                      alt="Çalışma ortamı"
-                      className="office-img"
-                    />
-                  </div>
-                </div>
+                {(() => {
+                  const officeContent = getContentBySection('office');
+                  const allOfficeImages = officeContent?.images && officeContent.images.length > 0 
+                    ? officeContent.images
+                    : defaultOfficeImages;
+                  
+                  // Sayfada sadece ilk 3 görsel göster
+                  const displayImages = allOfficeImages.slice(0, 3);
+                  const hasMoreImages = allOfficeImages.length > 3;
+                  
+                  return displayImages.length > 0 ? (
+                    <>
+                      {displayImages.map((image: string, index: number) => (
+                        <div key={index} className="col-lg-4 col-md-6 mb-4">
+                          <div className="office-image-box" 
+                               onClick={() => openLightbox(index, allOfficeImages)}
+                               style={{ cursor: 'pointer' }}>
+                            <img 
+                              src={image}
+                              alt={`Ofis görseli ${index + 1}`}
+                              className="office-img"
+                              onError={(e) => {
+                                const target = e.target as HTMLImageElement;
+                                target.src = "https://images.unsplash.com/photo-1497366216548-37526070297c?w=600&h=450&fit=crop";
+                              }}
+                            />
+                            <div className="office-image-overlay">
+                              <i className="fas fa-search-plus"></i>
+                            </div>
+                            {index === 2 && hasMoreImages && (
+                              <div className="more-images-overlay">
+                                <span>+{allOfficeImages.length - 3}</span>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      ))}
+                    </>
+                  ) : (
+                    // Varsayılan görseller (admin panelinden düzenlenmediğinde)
+                    <>
+                      {defaultOfficeImages.slice(0, 3).map((image: string, index: number) => (
+                        <div key={index} className="col-lg-4 col-md-6 mb-4">
+                          <div className="office-image-box" 
+                               onClick={() => openLightbox(index, defaultOfficeImages)}
+                               style={{ cursor: 'pointer' }}>
+                            <img 
+                              src={image}
+                              alt={`Ofis görseli ${index + 1}`}
+                              className="office-img"
+                            />
+                            <div className="office-image-overlay">
+                              <i className="fas fa-search-plus"></i>
+                            </div>
+                            {index === 2 && defaultOfficeImages.length > 3 && (
+                              <div className="more-images-overlay">
+                                <span>+{defaultOfficeImages.length - 3}</span>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      ))}
+                    </>
+                  );
+                })()}
               </div>
 
               {/* Ofis Konumu - İletişim ve Harita yan yana */}
               <div className="row">
                 <div className="col-lg-12">
-                                     <div className="blr-title-2 text-center mb-4">Ofis Konumumuz</div>
+                  <div className="blr-title-2 text-center mb-4">Ofis Konumumuz</div>
                   <div className="row">
                     <div className="col-lg-4">
                       <h5 className="c-w mb-3">İletişim Bilgileri</h5>
-                      <p className="c-w mb-2"><strong>Adres:</strong> Kazımiye, Dumlupınar Cd. No:22, 59860 Çorlu/Tekirdağ</p>
-                      <p className="c-w mb-2"><strong>Telefon:</strong> 0533 368 1965</p>
-                                              <p className="c-w mb-2"><strong>E-posta:</strong> info@blrinsaat.com</p>
+                      <div className="markdown-content c-w">
+                        <ReactMarkdown>
+                          {getContentBySection('office_location')?.content || `
+                            **Adres:** Kazımiye, Dumlupınar Cd. No:22, 59860 Çorlu/Tekirdağ
+                            
+                            **Telefon:** 0533 368 1965
+                            
+                            **E-posta:** info@blrinsaat.com
+                          `}
+                        </ReactMarkdown>
+                      </div>
                     </div>
                     <div className="col-lg-8">
                       <div className="office-map">
                         <iframe 
-                          src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3048.4555!2d26.555664!3d41.677177!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2zNDHCsDQwJzM3LjgiTiAyNsKwMzMnMjAuNCJF!5e0!3m2!1str!2str!4v1642678901234!5m2!1str!2str"
+                          src={getContentBySection('office_location')?.images?.[0] || "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3048.4555!2d26.555664!3d41.677177!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2zNDHCsDQwJzM3LjgiTiAyNsKwMzMnMjAuNCJF!5e0!3m2!1str!2str!4v1642678901234!5m2!1str!2str"}
                           width="100%"
                           height="300"
                           style={{ border: 0, borderRadius: '14px' }}
@@ -246,6 +374,29 @@ const About: React.FC = () => {
           </div>
         </div>
       </section>
+
+      {/* Lightbox Modal */}
+      {lightboxOpen && (
+        <div className="lightbox-overlay" onClick={closeLightbox}>
+          <div className="lightbox-content" 
+               onClick={(e) => e.stopPropagation()}
+               onTouchStart={onTouchStart}
+               onTouchMove={onTouchMove}
+               onTouchEnd={onTouchEnd}>
+            <button className="lightbox-close" onClick={closeLightbox}>×</button>
+            <button className="lightbox-nav lightbox-prev" onClick={prevImage}>‹</button>
+            <button className="lightbox-nav lightbox-next" onClick={nextImage}>›</button>
+            <img 
+              src={lightboxImages[currentImageIndex]} 
+              alt={`Ofis görseli ${currentImageIndex + 1}`}
+              className="lightbox-image"
+            />
+            <div className="lightbox-counter">
+              {currentImageIndex + 1} / {lightboxImages.length}
+            </div>
+          </div>
+        </div>
+      )}
 
       <style>{`
         .prj {
@@ -287,106 +438,142 @@ const About: React.FC = () => {
         .blr-title-2 {
           font-size: 2rem;
           font-weight: bold;
-          margin-bottom: 1.5rem;
-          color: white;
-        }
-        .blr-subtitle {
-          font-size: 1.3rem;
-          font-weight: 600;
-          margin-bottom: 1.2rem;
+          margin-bottom: 1rem;
           color: white;
         }
         .office-image-box {
           position: relative;
           overflow: hidden;
           border-radius: 14px;
-          box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+          transition: transform 0.3s ease;
+        }
+        .office-image-box:hover {
+          transform: scale(1.02);
         }
         .office-img {
           width: 100%;
-          height: 300px; /* Daha büyük yükseklik */
+          height: 250px;
           object-fit: cover;
-          transition: transform 0.3s ease;
+          border-radius: 14px;
         }
-        .office-image-box:hover .office-img {
-          transform: scale(1.05);
-        }
-        .office-caption {
+        .office-image-overlay {
           position: absolute;
-          bottom: 0;
+          top: 0;
           left: 0;
-          width: 100%;
-          padding: 10px 15px;
-          background-color: rgba(0, 0, 0, 0.6);
-          color: white;
-          text-align: center;
-          border-bottom-left-radius: 14px;
-          border-bottom-right-radius: 14px;
+          right: 0;
+          bottom: 0;
+          background: rgba(0, 0, 0, 0.5);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          opacity: 0;
+          transition: opacity 0.3s ease;
+          border-radius: 14px;
         }
-        .office-caption h4 {
-          margin: 0;
-          font-size: 1.1rem;
+        .office-image-box:hover .office-image-overlay {
+          opacity: 1;
+        }
+        .office-image-overlay i {
+          color: white;
+          font-size: 2rem;
+        }
+        .more-images-overlay {
+          position: absolute;
+          top: 10px;
+          right: 10px;
+          background: rgba(0, 0, 0, 0.8);
+          color: white;
+          padding: 5px 10px;
+          border-radius: 20px;
+          font-size: 0.9rem;
           font-weight: bold;
         }
-        .office-location-box {
-          border-radius: 14px;
-          padding: 30px;
-          margin-top: 30px;
-          box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        
+        /* Lightbox Styles */
+        .lightbox-overlay {
+          position: fixed;
+          top: 0;
+          left: 0;
+          right: 0;
+          bottom: 0;
+          background: rgba(0, 0, 0, 0.9);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          z-index: 9999;
         }
-        .office-info {
-          margin-bottom: 20px;
+        .lightbox-content {
+          position: relative;
+          max-width: 90vw;
+          max-height: 90vh;
         }
-        .contact-info h5, .transport-info h5 {
-          font-size: 1.2rem;
-          margin-bottom: 10px;
+        .lightbox-image {
+          max-width: 100%;
+          max-height: 90vh;
+          object-fit: contain;
+          border-radius: 8px;
+        }
+        .lightbox-close {
+          position: absolute;
+          top: -40px;
+          right: 0;
+          background: none;
+          border: none;
           color: white;
+          font-size: 2rem;
+          cursor: pointer;
+          z-index: 10000;
         }
-        .contact-info p, .transport-info p {
+        .lightbox-nav {
+          position: absolute;
+          top: 50%;
+          transform: translateY(-50%);
+          background: rgba(0, 0, 0, 0.5);
+          border: none;
+          color: white;
+          font-size: 2rem;
+          padding: 10px 15px;
+          cursor: pointer;
+          border-radius: 50%;
+          transition: background 0.3s ease;
+        }
+        .lightbox-nav:hover {
+          background: rgba(0, 0, 0, 0.8);
+        }
+        .lightbox-prev {
+          left: -60px;
+        }
+        .lightbox-next {
+          right: -60px;
+        }
+        .lightbox-counter {
+          position: absolute;
+          bottom: -40px;
+          left: 50%;
+          transform: translateX(-50%);
+          color: white;
           font-size: 1rem;
-          color: #adb5bd;
-          margin-bottom: 5px;
         }
-        .office-map {
-          border-radius: 14px;
-          overflow: hidden;
-          box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-        }
-        .markdown-content h1, 
-        .markdown-content h2, 
-        .markdown-content h3, 
-        .markdown-content h4, 
-        .markdown-content h5, 
-        .markdown-content h6 {
-          font-size: 1.1rem;
-          font-weight: 600;
-          color: white;
-          margin-top: 1rem;
-          margin-bottom: 0.5rem;
-        }
-        .markdown-content p {
-          margin-bottom: 0.8rem;
-          line-height: 1.6;
-        }
-        .markdown-content ul, .markdown-content ol {
-          margin-bottom: 1rem;
-          padding-left: 1.5rem;
-        }
-        .markdown-content li {
-          margin-bottom: 0.3rem;
-        }
-        @media (max-width: 991px) {
-          .pc-p-70 {
-            padding: 30px 20px;
+        
+        /* Mobil Responsive */
+        @media (max-width: 768px) {
+          .lightbox-nav {
+            font-size: 1.5rem;
+            padding: 8px 12px;
           }
-          .p-50-40 {
-            padding: 30px 20px;
+          .lightbox-prev {
+            left: 10px;
           }
-          .office-image-box {
-            height: 150px; /* Adjust height for smaller screens */
+          .lightbox-next {
+            right: 10px;
           }
-          .office-caption h4 {
-            font-size: 0.9rem;
+          .lightbox-close {
+            top: 10px;
+            right: 10px;
+            font-size: 1.5rem;
+          }
+          .office-img {
+            height: 200px;
           }
         }
       `}</style>

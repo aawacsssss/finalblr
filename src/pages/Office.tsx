@@ -96,7 +96,7 @@ const Office: React.FC = () => {
                     loading="lazy" 
                     className="prj" 
                     alt="BLR İnşaat Kurumsal" 
-                    src={getContentBySection('main_image')?.images?.[0] || "/front/gorsel/genel/blr-insaat-2.jpg"}
+                    src={getContentBySection('main_image')?.images?.[0] || "/front/gorsel/genel/logo.png"}
                   />
                 </div>
               </div>
@@ -167,7 +167,7 @@ const Office: React.FC = () => {
                         loading="lazy" 
                         className="w-100" 
                         alt="BLR İnşaat Ofis Video" 
-                        src="/front/gorsel/ofis/blr-insaat-video.jpg"
+                        src="/front/gorsel/genel/logo.png"
                       />
                     </a>
                   </div>
@@ -194,7 +194,7 @@ const Office: React.FC = () => {
                         loading="lazy" 
                         className="prj" 
                         alt="BLR İnşaat Ofis 1" 
-                        src="/front/gorsel/ofis/1.jpg"
+                        src="/front/gorsel/genel/logo.png"
                       />
                     </div>
                     <div className="col-lg-3 col-md-6 mb-4">
@@ -202,7 +202,7 @@ const Office: React.FC = () => {
                         loading="lazy" 
                         className="prj" 
                         alt="BLR İnşaat Ofis 2" 
-                        src="/front/gorsel/ofis/2.jpg"
+                        src="/front/gorsel/genel/logo.png"
                       />
                     </div>
                     <div className="col-lg-3 col-md-6 mb-4">
@@ -210,7 +210,7 @@ const Office: React.FC = () => {
                         loading="lazy" 
                         className="prj" 
                         alt="BLR İnşaat Ofis 3" 
-                        src="/front/gorsel/ofis/3.jpg"
+                        src="/front/gorsel/genel/logo.png"
                       />
                     </div>
                     <div className="col-lg-3 col-md-6 mb-4">
@@ -218,7 +218,7 @@ const Office: React.FC = () => {
                         loading="lazy" 
                         className="prj" 
                         alt="BLR İnşaat Ofis 4" 
-                        src="/front/gorsel/ofis/4.jpg"
+                        src="/front/gorsel/genel/logo.png"
                       />
                     </div>
                   </div>

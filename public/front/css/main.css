@@ -952,10 +952,14 @@ header{background: white;border-bottom:1px #ddd solid;}
 .swiper-slider-2 {
     padding: 0;
     position: relative;
+    overflow: hidden;
 }
 
 .swiper-slider-2 .swiper-slide {
     position: relative;
+    min-height: 400px;
+    height: auto;
+    overflow: hidden;
 }
 
 .swiper-slider-2 .swiper-slide::before {
@@ -969,9 +973,13 @@ header{background: white;border-bottom:1px #ddd solid;}
 }
 
 .swiper-slider-2 .swiper-slide img {
-    height: 550px;
     width: 100%;
+    height: auto;
+    min-height: 400px;
+    max-height: 550px;
     object-fit: cover;
+    object-position: center;
+    display: block;
 }
 
 .swiper-slider-2 .swiper-slide .slider-content {
@@ -981,6 +989,9 @@ header{background: white;border-bottom:1px #ddd solid;}
     width: 100%;
     color: white;
     text-align: center;
+    z-index: 2;
+    margin: 0;
+    padding: 0;
 }
 
 .swiper-slider-2 .swiper-slide .slider-content .title {
@@ -1053,6 +1064,9 @@ header{background: white;border-bottom:1px #ddd solid;}
     -ms-flex-pack: distribute;
     justify-content: space-around;
     color: white;
+    margin: 0;
+    padding: 0;
+    transition: all 0.3s ease;
 }
 
 .nav-area div {

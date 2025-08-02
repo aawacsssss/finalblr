@@ -1,82 +1,78 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Swiper, SwiperSlide } from 'swiper/react';
-import { Navigation, Autoplay } from 'swiper';
+import { Autoplay, Navigation } from 'swiper';
 import 'swiper/css';
-import 'swiper/css/navigation';
 import 'swiper/css/autoplay';
+import 'swiper/css/navigation';
 import { sliderService, siteContentService, Slider, SiteContent } from '../services/supabaseService';
 
 const Home: React.FC = () => {
-  const [activeIndex, setActiveIndex] = useState(0);
   const [sliders, setSliders] = useState<Slider[]>([]);
   const [homeContents, setHomeContents] = useState<SiteContent[]>([]);
   const [loading, setLoading] = useState(true);
+  const [dataLoaded, setDataLoaded] = useState(false);
+  const [activeSlideIndex, setActiveSlideIndex] = useState(0);
+  const [headerHeight, setHeaderHeight] = useState(0);
 
-  // Eski slider verileri (fallback olarak)
-  const defaultSliders: Slider[] = [
-    {
-      id: 1,
-      title: 'ARMONIA RESIDENZA',
-      image: '/front/gorsel/slider/armonia.jpg',
-      link: '/armonia-residenza'
-    },
-    {
-      id: 2,
-      title: 'CENTRO',
-      image: '/front/gorsel/slider/centro.jpg',
-      link: '/centro'
-    },
-    {
-      id: 3,
-      title: 'GARDENYA VILLA',
-      image: '/front/gorsel/slider/gardenya-villa.jpg',
-      link: '/gardenya-villa'
-    },
-    {
-      id: 4,
-      title: 'LUSSO',
-      image: '/front/gorsel/slider/lusso.jpg',
-      link: '/lusso'
-    },
-    {
-      id: 5,
-      title: 'VIA PALAZZO',
-      image: '/front/gorsel/slider/via-palazzo.jpg',
-      link: '/via-palazzo'
+  const loadData = async () => {
+    try {
+      const [slidersData, contentsData] = await Promise.all([
+        sliderService.getAll(),
+        siteContentService.getByPage('home')
+      ]);
+
+      setSliders(slidersData || []);
+      setHomeContents(contentsData || []);
+      setDataLoaded(true);
+      
+
+    } catch (error) {
+      // Silent error handling
+    } finally {
+      setLoading(false);
     }
-  ];
+  };
 
   useEffect(() => {
-    const loadData = async () => {
-      try {
-        setLoading(true);
-        const [slidersData, contentsData] = await Promise.all([
-          sliderService.getAll(),
-          siteContentService.getByPage('home')
-        ]);
-        
-        // Eğer Supabase'den veri gelmezse, varsayılan verileri kullan
-        setSliders(slidersData.length > 0 ? slidersData : defaultSliders);
-        setHomeContents(contentsData);
-      } catch (error) {
-        console.error('Ana sayfa verileri yüklenirken hata:', error);
-        // Hata durumunda varsayılan verileri kullan
-        setSliders(defaultSliders);
-        setHomeContents([]);
-      } finally {
-        setLoading(false);
-      }
-    };
     loadData();
   }, []);
 
-  // İçerik bölümlerini section_name'e göre grupla
+  const handleSlideChange = (swiper: any) => {
+    const realIndex = swiper.realIndex !== undefined ? swiper.realIndex : swiper.activeIndex;
+    console.log('Slide changed:', realIndex, 'Total slides:', sliders.length);
+    setActiveSlideIndex(realIndex);
+  };
+
+  useEffect(() => {
+    const handleResize = () => {
+      // Pencere boyutu değiştiğinde yapılacak işlemler
+    };
+
+    const calculateHeaderHeight = () => {
+      const mobileHeader = document.querySelector('.header-mobile');
+      const mainHeader = document.getElementById('main-header');
+
+      const header = mobileHeader || mainHeader;
+      if (header) {
+        const height = (header as HTMLElement).offsetHeight;
+        setHeaderHeight(height);
+      }
+    };
+
+    calculateHeaderHeight();
+    window.addEventListener('resize', () => {
+      handleResize();
+      calculateHeaderHeight();
+    });
+
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
   const getContentBySection = (sectionName: string) => {
     return homeContents.find(content => content.section_name === sectionName);
   };
 
-  // Görsel URL'sini al (veritabanından veya fallback)
   const getImageUrl = (content: SiteContent | undefined, fallbackPath: string) => {
     if (content?.images && content.images.length > 0) {
       return content.images[0];
@@ -84,119 +80,613 @@ const Home: React.FC = () => {
     return fallbackPath;
   };
 
-  if (loading) {
-    return (
-      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '50vh' }}>
-        <div>Yükleniyor...</div>
-      </div>
-    );
-  }
-
   return (
     <>
-      <section style={{ position: 'relative', paddingTop: '180px' }} className="p-0">
-        {sliders.length > 0 ? (
-          <Swiper
-            modules={[Navigation, Autoplay]}
-            navigation
-            loop
-            autoplay={{
-              delay: 5000,
-              disableOnInteraction: false,
-            }}
-            spaceBetween={10}
-            className="mySwiper2"
-            onSlideChange={(swiper) => setActiveIndex(swiper.realIndex)}
-          >
-            {sliders.map((slide, idx) => (
-              <SwiperSlide key={slide.id}>
-                <Link to={slide.link || '#'}>
-                  <img
-                    src={slide.image}
-                    alt={slide.title || `Slider ${idx + 1}`}
-                    style={{
-                      width: '100%',
-                      display: 'block',
-                    }}
-                  />
-                </Link>
-              </SwiperSlide>
-            ))}
-          </Swiper>
-        ) : (
-          <div style={{ 
-            height: '720px', 
-            width: '100%', 
-            background: '#f0f0f0', 
-            display: 'flex', 
-            alignItems: 'center', 
-            justifyContent: 'center',
-            fontSize: '18px',
-            color: '#666'
-          }}>
-            Slider verisi yükleniyor...
-          </div>
-        )}
+      <style>{`
+        @keyframes spin {
+          0% { transform: rotate(0deg); }
+          100% { transform: rotate(360deg); }
+        }
+        
+        /* Mobilde slider'ı header'ın altına taşı - GÜÇLÜ CSS */
+        @media (max-width: 768px) {
+          #hero-section {
+            margin: 0 !important;
+            padding: 0 !important;
+            position: relative !important;
+            z-index: 1001 !important;
+            height: 260px !important;
+            max-height: 260px !important;
+          }
+          
+          /* Swiper'ın margin/padding'ini kaldır */
+          .mySwiper2 {
+            margin: 0 !important;
+            padding: 0 !important;
+            touch-action: pan-x pan-y !important;
+            -webkit-touch-callout: none !important;
+            -webkit-tap-highlight-color: transparent !important;
+          }
+          
+          /* SwiperSlide'ların yüksekliğini ayarla */
+          .swiper-slide {
+            height: 100% !important;
+            margin: 0 !important;
+            padding: 0 !important;
+            touch-action: pan-x pan-y !important;
+            -webkit-touch-callout: none !important;
+            -webkit-tap-highlight-color: transparent !important;
+          }
+          
+          /* Swiper wrapper'ın margin'ini kaldır */
+          .swiper-wrapper {
+            margin: 0 !important;
+            padding: 0 !important;
+            border: none !important;
+            touch-action: pan-x pan-y !important;
+            -webkit-touch-callout: none !important;
+            -webkit-tap-highlight-color: transparent !important;
+          }
+          
+          /* Tüm Swiper elementlerinin margin'ini kaldır */
+          .swiper, .swiper-container, .swiper-slide, .swiper-wrapper {
+            margin: 0 !important;
+            padding: 0 !important;
+            border: none !important;
+          }
+          
+          /* Section'ın alt margin'ini kaldır */
+          #hero-section {
+            margin-bottom: 0 !important;
+            padding-bottom: 0 !important;
+          }
+          
+          /* Navigation butonlarını göster */
+          .swiper-button-next,
+          .swiper-button-prev {
+            display: flex !important;
+            position: absolute !important;
+            width: 40px !important;
+            height: 40px !important;
+            background: rgba(35, 38, 23, 0.8) !important;
+            border-radius: 50% !important;
+            color: white !important;
+            align-items: center !important;
+            justify-content: center !important;
+            cursor: pointer !important;
+            border: none !important;
+            font-size: 18px !important;
+            z-index: 1000 !important;
+          }
+          
+          .swiper-button-prev {
+            left: 20px !important;
+            top: 50% !important;
+            transform: translateY(-50%) !important;
+          }
+          
+          .swiper-button-next {
+            right: 20px !important;
+            top: 50% !important;
+            transform: translateY(-50%) !important;
+          }
+          
+          /* Pagination'ı gizle */
+          .swiper-pagination {
+            display: none !important;
+          }
+          
+          /* Swiper'ın hidden overflow'unu düzelt */
+          .swiper-backface-hidden {
+            overflow: visible !important;
+          }
+          
+          /* Buton container'ın üst padding'ini kaldır */
+          .project-buttons-container {
+            padding-top: 0 !important;
+            margin-top: -80px !important;
+            position: relative !important;
+            z-index: 1003 !important;
+          }
+          
+          /* Web için butonları göster */
+          @media (min-width: 769px) {
+            .project-buttons-container {
+              display: flex !important;
+              margin-top: 0 !important;
+              padding: 10px 20px !important;
+              background: rgba(255, 255, 255, 0.95) !important;
+              visibility: visible !important;
+              opacity: 1 !important;
+            }
+          }
+          
+          /* Tüm ekran boyutlarında butonları göster */
+          .project-buttons-container {
+            display: flex !important;
+            visibility: visible !important;
+            opacity: 1 !important;
+            position: relative !important;
+            z-index: 9999 !important;
+          }
+          
+          /* Tüm gizleme kurallarını geçersiz kıl */
+          .project-buttons-container,
+          .project-buttons-container * {
+            display: flex !important;
+            visibility: visible !important;
+            opacity: 1 !important;
+            position: relative !important;
+            z-index: 9999 !important;
+          }
+          
+          /* Tüm gizleme kurallarını geçersiz kıl - daha güçlü */
+          div[class*="project-buttons"],
+          div[class*="project-buttons"] *,
+          .project-buttons-container,
+          .project-buttons-container * {
+            display: flex !important;
+            visibility: visible !important;
+            opacity: 1 !important;
+            position: relative !important;
+            z-index: 9999 !important;
+            pointer-events: auto !important;
+          }
+          
+          /* Mobil için buton container ayarları */
+          @media (max-width: 768px) {
+            .yeni-butonlar-container {
+              justify-content: center !important;
+              align-items: center !important;
+              gap: 6px !important;
+              padding: 0 !important;
+              margin-top: 10px !important;
+              min-height: 50px !important;
+              background: none !important;
+              flex-wrap: wrap !important;
+            }
+            
+            .yeni-butonlar-container > div {
+              padding: 8px 16px !important;
+              border-radius: 20px !important;
+              font-size: 10px !important;
+              min-width: 90px !important;
+              max-width: 110px !important;
+              flex: 1 !important;
+              display: flex !important;
+              align-items: center !important;
+              justify-content: center !important;
+              text-align: center !important;
+              white-space: nowrap !important;
+              overflow: hidden !important;
+              text-overflow: ellipsis !important;
+              background: rgba(35, 38, 23, 0.9) !important;
+            }
+            
+            /* Mobil slider ayarları */
+            .mySwiper2 {
+              touch-action: pan-x pan-y !important;
+              user-select: none !important;
+              -webkit-user-select: none !important;
+              -moz-user-select: none !important;
+              -ms-user-select: none !important;
+              overflow: visible !important;
+              position: relative !important;
+            }
+            
+            .mySwiper2 .swiper-wrapper {
+              margin: 0 !important;
+              padding: 0 !important;
+              background: transparent !important;
+            }
+            
+            .mySwiper2 .swiper-slide {
+              width: 100% !important;
+              height: 100% !important;
+              flex-shrink: 0 !important;
+            }
+            
+            .mySwiper2 .swiper-slide img {
+              width: 100% !important;
+              height: 100% !important;
+              object-fit: cover !important;
+              object-position: center !important;
+              pointer-events: auto !important;
+              background: transparent !important;
+            }
+            
+            .mySwiper2 .swiper-slide {
+              background: transparent !important;
+            }
+            
+            .mySwiper2 .swiper-wrapper {
+              background: transparent !important;
+            }
+            
+            .mySwiper2 {
+              background: transparent !important;
+            }
+            
+            .mySwiper2 .swiper-slide a {
+              pointer-events: auto !important;
+            }
+            
 
-        {/* Dinamik Proje Kutucukları */}
-        {sliders.length > 0 && (
+            
+            /* Mobilde navigation butonlarını göster */
+            .swiper-button-next,
+            .swiper-button-prev {
+              display: flex !important;
+              position: absolute !important;
+              width: 40px !important;
+              height: 40px !important;
+              background: rgba(35, 38, 23, 0.8) !important;
+              border-radius: 50% !important;
+              color: white !important;
+              align-items: center !important;
+              justify-content: center !important;
+              cursor: pointer !important;
+              border: none !important;
+              font-size: 18px !important;
+              z-index: 1000 !important;
+            }
+            
+            .swiper-button-prev {
+              left: 20px !important;
+              top: 50% !important;
+              transform: translateY(-50%) !important;
+            }
+            
+            .swiper-button-next {
+              right: 20px !important;
+              top: 50% !important;
+              transform: translateY(-50%) !important;
+            }
+            
+
+            
+
+          }
+          
+          /* JavaScript ile gizlenmeyi engelle */
+          .project-buttons-container {
+            display: flex !important;
+            visibility: visible !important;
+            opacity: 1 !important;
+            position: relative !important;
+            z-index: 9999 !important;
+            pointer-events: auto !important;
+            transform: none !important;
+            filter: none !important;
+            clip: auto !important;
+            clip-path: none !important;
+          }
+          
+          /* Header'ı normal akışa al ve üst boşluğu kaldır */
+          .header-mobile {
+            position: static !important;
+            z-index: auto !important;
+            margin-top: 0 !important;
+            padding-top: 0 !important;
+          }
+          
+          /* Sayfa üst boşluğunu kaldır */
+          body, html {
+            margin-top: 0 !important;
+            padding-top: 0 !important;
+          }
+        }
+      `}</style>
+
+      {/* Modern Hero Section with Slider */}
+      <section style={{
+        position: 'relative',
+        width: '100%',
+        height: window.innerWidth <= 768 ? '260px' : '720px',
+        maxHeight: window.innerWidth <= 768 ? '260px' : '720px',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        overflow: 'hidden',
+        margin: '0px',
+        padding: '0px',
+        zIndex: window.innerWidth <= 768 ? 1001 : 1,
+        background: 'transparent'
+      }} className="p-0" id="hero-section">
+        {/* Swiper Slider */}
+        {loading || !dataLoaded ? (
           <div style={{
             display: 'flex',
             justifyContent: 'center',
-            alignItems: 'flex-end',
-            gap: '12px',
-            marginTop: '32px',
-            marginBottom: '16px',
+            alignItems: 'center',
+            height: '100%',
+            background: '#f8f9fa'
           }}>
-            {(() => {
-              const total = sliders.length;
-              if (total === 0) return null;
-              // 3 buton: önceki, aktif, sonraki
-              const prevIdx = (activeIndex - 1 + total) % total;
-              const nextIdx = (activeIndex + 1) % total;
-              const indices = total === 1 ? [activeIndex] : total === 2 ? [prevIdx, activeIndex] : [prevIdx, activeIndex, nextIdx];
-              return indices.map((idx, i) => (
-                <div
-                  key={sliders[idx].id}
-                  style={{
-                    background: activeIndex === idx ? '#232617' : '#f5f5f5',
-                    color: activeIndex === idx ? '#fff' : '#232617',
-                    borderRadius: '20px',
-                    padding: activeIndex === idx ? '22px 36px' : '10px 18px',
-                    minWidth: activeIndex === idx ? '180px' : '80px',
-                    textAlign: 'center',
-                    fontSize: activeIndex === idx ? '22px' : '14px',
-                    letterSpacing: '2px',
-                    opacity: activeIndex === idx ? 1 : 0.5,
-                    border: activeIndex === idx ? '2px solid #232617' : '1px solid #ddd',
-                    boxShadow: activeIndex === idx ? '0 2px 16px #23261722' : 'none',
-                    transition: 'all 0.3s cubic-bezier(.4,2,.6,1)',
-                    fontFamily: 'Poppins, Montserrat, Inter, Roboto, Arial, sans-serif',
-                    fontWeight: activeIndex === idx ? 700 : 500,
-                    cursor: 'pointer',
-                    zIndex: activeIndex === idx ? 2 : 1,
-                    transform: activeIndex === idx ? 'scale(1.12)' : 'scale(0.92)',
-                  }}
-                >
-                  {sliders[idx].title || `Proje ${idx + 1}`}
-                </div>
-              ));
-            })()}
+            <div style={{
+              width: '50px',
+              height: '50px',
+              border: '4px solid #f3f3f3',
+              borderTop: '4px solid #232617',
+              borderRadius: '50%',
+              animation: 'spin 1s linear infinite'
+            }}></div>
+          </div>
+        ) : sliders.length > 0 ? (
+          <Swiper
+            modules={[Autoplay, Navigation]}
+            spaceBetween={0}
+            slidesPerView={1}
+            autoplay={{
+              delay: 3000,
+              disableOnInteraction: false,
+              pauseOnMouseEnter: false,
+              waitForTransition: true,
+              stopOnLastSlide: false,
+            }}
+            navigation={{
+              nextEl: '.swiper-button-next',
+              prevEl: '.swiper-button-prev',
+            }}
+            loop={true}
+            onSlideChange={handleSlideChange}
+            className="mySwiper2"
+            grabCursor={true}
+            allowTouchMove={true}
+            resistance={false}
+            watchSlidesProgress={true}
+            shortSwipes={true}
+            longSwipes={true}
+            longSwipesRatio={0.3}
+            longSwipesMs={200}
+            threshold={10}
+            simulateTouch={true}
+            touchEventsTarget="wrapper"
+            preventClicks={false}
+            preventClicksPropagation={false}
+            allowSlideNext={true}
+            allowSlidePrev={true}
+            touchStartPreventDefault={false}
+            touchMoveStopPropagation={false}
+
+            style={{
+              width: '100%',
+              height: '100%',
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              margin: '0px',
+              padding: '0px',
+              zIndex: window.innerWidth <= 768 ? 1002 : 1,
+              background: 'transparent'
+            }}
+
+          >
+            {sliders.map((slide, index) => {
+              return (
+                <SwiperSlide key={slide.id}>
+                  <Link to={`/proje/${slide.project_id || (slide.link?.match(/\/proje\/(\d+)/)?.[1] || slide.id)}`} style={{ display: 'block', width: '100%', height: '100%' }}>
+                    <img
+                      src={slide.image}
+                      alt={slide.title || 'Slider Image'}
+                                             style={{
+                         width: '100%',
+                         height: '100%',
+                         objectFit: window.innerWidth <= 768 ? 'cover' : (slide.image_fit || 'cover'),
+                         objectPosition: slide.image_position || 'center',
+                         backgroundColor: slide.background_color || '#f8f9fa'
+                       }}
+                    />
+                  </Link>
+                </SwiperSlide>
+              )
+            })}
+          </Swiper>
+        ) : (
+          <div style={{
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
+            height: '100%',
+            background: '#f8f9fa',
+            color: '#666',
+            fontSize: '1.2rem'
+          }}>
+            Slider içeriği bulunamadı
           </div>
         )}
       </section>
 
+            {/* Project Buttons - YENİ KONUM */}
+      <div
+        className="yeni-butonlar-container"
+        style={{
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+          gap: window.innerWidth <= 768 ? '8px' : '12px',
+          padding: window.innerWidth <= 768 ? '10px 15px' : '15px 20px',
+                                  background: 'none',
+          margin: '0',
+                              marginTop: window.innerWidth <= 768 ? '10px' : '10px',
+          width: '100%',
+          flexDirection: 'row',
+          transition: 'all 0.3s ease',
+          position: 'relative',
+          zIndex: 9999,
+          visibility: 'visible',
+          opacity: 1,
+          border: 'none',
+          minHeight: window.innerWidth <= 768 ? '50px' : '60px',
+          pointerEvents: 'auto',
+        }}>
+        {sliders && sliders.length > 0 ? sliders.map((slide, idx) => {
+          // Proje ID'sini doğru al
+          const projectId = slide.project_id || (slide.link?.match(/\/proje\/(\d+)/)?.[1]) || slide.id;
+          const isActive = idx === (activeSlideIndex % sliders.length);
+          const buttonText = slide.title ? slide.title.replace(/<[^>]*>/g, '') : `Proje ${idx + 1}`;
+          
+          return (
+            <div
+              key={slide.id}
+              style={{
+                background: isActive ? 'rgba(35, 38, 23, 1)' : 'rgba(35, 38, 23, 0.7)',
+                color: 'white',
+                padding: window.innerWidth <= 768 ? '8px 16px' : '12px 24px',
+                borderRadius: '25px',
+                textDecoration: 'none',
+                fontSize: window.innerWidth <= 768 ? '10px' : '14px',
+                fontWeight: 600,
+                boxShadow: isActive ? '0 6px 20px rgba(0,0,0,0.4)' : '0 4px 15px rgba(0,0,0,0.2)',
+                backdropFilter: 'blur(10px)',
+                border: isActive ? '2px solid rgba(255,255,255,0.4)' : '2px solid rgba(255,255,255,0.2)',
+                transition: 'all 0.3s ease',
+                cursor: 'pointer',
+                whiteSpace: 'nowrap',
+                textAlign: 'center',
+                minWidth: window.innerWidth <= 768 ? '100px' : '120px',
+                maxWidth: window.innerWidth <= 768 ? '100px' : '180px',
+                flex: window.innerWidth <= 768 ? '1' : 'auto',
+                transform: isActive ? 'scale(1.05)' : 'scale(1)',
+                opacity: isActive ? 1 : 0.8
+              }}
+              onMouseEnter={(e) => {
+                if (!isActive) {
+                  e.currentTarget.style.transform = 'translateY(-2px) scale(1.02)';
+                  e.currentTarget.style.boxShadow = '0 6px 20px rgba(0,0,0,0.3)';
+                }
+              }}
+              onMouseLeave={(e) => {
+                if (!isActive) {
+                  e.currentTarget.style.transform = 'translateY(0) scale(1)';
+                  e.currentTarget.style.boxShadow = '0 4px 15px rgba(0,0,0,0.2)';
+                }
+              }}
+              onClick={() => {
+                window.location.href = `/proje/${projectId}`;
+              }}
+            >
+              {buttonText}
+            </div>
+          );
+        }) : (
+          <>
+            <div
+              style={{
+                background: 'rgba(35, 38, 23, 0.7)',
+                color: 'white',
+                padding: window.innerWidth <= 768 ? '8px 16px' : '12px 24px',
+                borderRadius: '25px',
+                textDecoration: 'none',
+                fontSize: window.innerWidth <= 768 ? '10px' : '14px',
+                fontWeight: 600,
+                boxShadow: '0 4px 15px rgba(0,0,0,0.2)',
+                backdropFilter: 'blur(10px)',
+                border: '2px solid rgba(255,255,255,0.2)',
+                transition: 'all 0.3s ease',
+                cursor: 'pointer',
+                whiteSpace: 'nowrap',
+                textAlign: 'center',
+                minWidth: window.innerWidth <= 768 ? '100px' : '120px',
+                maxWidth: window.innerWidth <= 768 ? '100px' : '180px',
+                flex: window.innerWidth <= 768 ? '1' : 'auto'
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.transform = 'translateY(-2px) scale(1.02)';
+                e.currentTarget.style.boxShadow = '0 6px 20px rgba(0,0,0,0.3)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.transform = 'translateY(0) scale(1)';
+                e.currentTarget.style.boxShadow = '0 4px 15px rgba(0,0,0,0.2)';
+              }}
+              onClick={() => {
+                window.location.href = '/proje/32';
+              }}
+            >
+              Proje 1
+            </div>
+            <div
+              style={{
+                background: 'rgba(35, 38, 23, 0.7)',
+                color: 'white',
+                padding: window.innerWidth <= 768 ? '8px 16px' : '12px 24px',
+                borderRadius: '25px',
+                textDecoration: 'none',
+                fontSize: window.innerWidth <= 768 ? '10px' : '14px',
+                fontWeight: 600,
+                boxShadow: '0 4px 15px rgba(0,0,0,0.2)',
+                backdropFilter: 'blur(10px)',
+                border: '2px solid rgba(255,255,255,0.2)',
+                transition: 'all 0.3s ease',
+                cursor: 'pointer',
+                whiteSpace: 'nowrap',
+                textAlign: 'center',
+                minWidth: window.innerWidth <= 768 ? '100px' : '120px',
+                maxWidth: window.innerWidth <= 768 ? '100px' : '180px',
+                flex: window.innerWidth <= 768 ? '1' : 'auto'
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.transform = 'translateY(-2px) scale(1.02)';
+                e.currentTarget.style.boxShadow = '0 6px 20px rgba(0,0,0,0.3)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.transform = 'translateY(0) scale(1)';
+                e.currentTarget.style.boxShadow = '0 4px 15px rgba(0,0,0,0.2)';
+              }}
+              onClick={() => {
+                window.location.href = '/proje/33';
+              }}
+            >
+              Proje 2
+            </div>
+            <div
+              style={{
+                background: 'rgba(35, 38, 23, 0.7)',
+                color: 'white',
+                padding: window.innerWidth <= 768 ? '8px 16px' : '12px 24px',
+                borderRadius: '25px',
+                textDecoration: 'none',
+                fontSize: window.innerWidth <= 768 ? '10px' : '14px',
+                fontWeight: 600,
+                boxShadow: '0 4px 15px rgba(0,0,0,0.2)',
+                backdropFilter: 'blur(10px)',
+                border: '2px solid rgba(255,255,255,0.2)',
+                transition: 'all 0.3s ease',
+                cursor: 'pointer',
+                whiteSpace: 'nowrap',
+                textAlign: 'center',
+                minWidth: window.innerWidth <= 768 ? '100px' : '120px',
+                maxWidth: window.innerWidth <= 768 ? '100px' : '180px',
+                flex: window.innerWidth <= 768 ? '1' : 'auto'
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.transform = 'translateY(-2px) scale(1.02)';
+                e.currentTarget.style.boxShadow = '0 6px 20px rgba(0,0,0,0.3)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.transform = 'translateY(0) scale(1)';
+                e.currentTarget.style.boxShadow = '0 4px 15px rgba(0,0,0,0.2)';
+              }}
+              onClick={() => {
+                window.location.href = '/proje/34';
+              }}
+            >
+              Proje 3
+            </div>
+          </>
+        )}
+      </div>
+
       {/* Modern içerik blokları */}
-      <section style={{ background: '#fff', borderRadius: '32px', margin: '40px 0', boxShadow: '0 8px 32px #0001', padding: '70px 0' }}>
+      <section style={{ background: '#fff', borderRadius: '32px', margin: '0 0 40px 0', boxShadow: '0 8px 32px #0001', padding: '70px 0' }}>
         <div className="container">
           {/* İçerik 1 */}
           <div className="row align-items-center" style={{ marginBottom: '48px' }}>
             <div className="col-lg-6 m-a pc-p-70">
               <div className="blr-title-2" style={{ fontSize: '2.5rem', fontWeight: 700, color: '#232617', marginBottom: '24px' }}>
-                {getContentBySection('hero')?.title || 'Hayalinizdeki Yaşam Alanları'}
+                {getContentBySection('hero')?.title || 'BLR İnşaat'}
               </div>
               <p style={{ fontSize: '1.2rem', color: '#444', lineHeight: 1.7 }}>
-                {getContentBySection('hero')?.content || 'BLR İnşaat olarak, yaşam alanlarınızı sadece bir ev değil, bir yaşam tarzı olarak tasarlıyoruz. Modern mimarinin zarif çizgileriyle, fonksiyonelliği ve estetiği bir araya getiriyor, her detayı özenle işliyoruz. Hayalinizdeki konforu ve şıklığı, gerçeğe dönüştürüyoruz.'}
+                {getContentBySection('hero')?.content || 'BLR İnşaat olarak, kaliteli yaşam alanları inşa ediyoruz.'}
               </p>
             </div>
             <div className="col-lg-6 d-flex justify-content-center">
@@ -205,7 +695,7 @@ const Home: React.FC = () => {
                   className="mob-mt-30" 
                   loading="lazy" 
                   alt={getContentBySection('hero')?.title || "BLR İnşaat"} 
-                  src={getImageUrl(getContentBySection('hero'), "/front/gorsel/anasayfa/1.png")} 
+                  src={getImageUrl(getContentBySection('hero'), "/front/gorsel/genel/logo.png")} 
                   style={{ width: '100%', height: '340px', objectFit: 'cover', objectPosition: 'center' }} 
                 />
               </div>
@@ -216,10 +706,10 @@ const Home: React.FC = () => {
           <div className="row align-items-center flex-row-reverse" style={{ marginBottom: '48px' }}>
             <div className="col-lg-6 m-a pc-p-70">
               <div className="blr-title-2" style={{ fontSize: '2.5rem', fontWeight: 700, color: '#232617', marginBottom: '24px' }}>
-                {getContentBySection('about_preview')?.title || 'Geleceğe Değer Katan Tasarımlar'}
+                {getContentBySection('about_preview')?.title || 'BLR İnşaat'}
               </div>
               <p style={{ fontSize: '1.2rem', color: '#444', lineHeight: 1.7 }}>
-                {getContentBySection('about_preview')?.content || 'Projelerimizde, çağın ötesinde bir bakış açısı ile zamana meydan okuyan yapılar inşa ediyoruz. Yenilikçi çözümler ve sürdürülebilir malzemelerle, hem bugünün hem de yarının ihtiyaçlarına cevap veren mekanlar sunuyoruz.'}
+                {getContentBySection('about_preview')?.content || 'BLR İnşaat olarak, güvenilir ve kaliteli yapılar inşa ediyoruz.'}
               </p>
             </div>
             <div className="col-lg-6 d-flex justify-content-center">
@@ -228,7 +718,7 @@ const Home: React.FC = () => {
                   className="mob-mt-30" 
                   loading="lazy" 
                   alt={getContentBySection('about_preview')?.title || "BLR İnşaat"} 
-                  src={getImageUrl(getContentBySection('about_preview'), "/front/gorsel/anasayfa/4.png")} 
+                  src={getImageUrl(getContentBySection('about_preview'), "/front/gorsel/genel/logo.png")} 
                   style={{ width: '100%', height: '340px', objectFit: 'cover', objectPosition: 'center' }} 
                 />
               </div>
@@ -239,10 +729,10 @@ const Home: React.FC = () => {
           <div className="row align-items-center" style={{ marginBottom: '48px' }}>
             <div className="col-lg-6 m-a pc-p-70">
               <div className="blr-title-2" style={{ fontSize: '2.5rem', fontWeight: 700, color: '#232617', marginBottom: '24px' }}>
-                {getContentBySection('security')?.title || 'Güvenliğinizi Ön Planda Tutan Yapılar'}
+                {getContentBySection('security')?.title || 'BLR İnşaat'}
               </div>
               <p style={{ fontSize: '1.2rem', color: '#444', lineHeight: 1.7 }}>
-                {getContentBySection('security')?.content || 'Ailenizin huzuru ve güvenliği için en kaliteli malzemeleri ve ileri mühendislik tekniklerini kullanıyoruz. Deprem yönetmeliğine uygun, dayanıklı ve güvenilir yapılarımızla, sevdiklerinizle birlikte güven içinde yaşayacağınız alanlar oluşturuyoruz.'}
+                {getContentBySection('security')?.content || 'BLR İnşaat olarak, güvenli yapılar inşa ediyoruz.'}
               </p>
             </div>
             <div className="col-lg-6 d-flex justify-content-center">
@@ -250,7 +740,7 @@ const Home: React.FC = () => {
                 <img 
                   loading="lazy" 
                   alt="BLR İnşaat" 
-                  src={getImageUrl(getContentBySection('security'), "/front/gorsel/anasayfa/2.png")} 
+                  src={getImageUrl(getContentBySection('security'), "/front/gorsel/genel/logo.png")} 
                   style={{ width: '100%', height: '340px', objectFit: 'cover', objectPosition: 'center' }} 
                 />
               </div>
@@ -261,65 +751,18 @@ const Home: React.FC = () => {
           <div className="row align-items-center flex-row-reverse" style={{ marginBottom: '48px' }}>
             <div className="col-lg-6 m-a pc-p-70">
               <div className="blr-title-2" style={{ fontSize: '2.5rem', fontWeight: 700, color: '#232617', marginBottom: '24px' }}>
-                {getContentBySection('comfort')?.title || 'Her Detayda Konfor ve Şıklık'}
+                {getContentBySection('comfort')?.title || 'BLR İnşaat'}
               </div>
               <p style={{ fontSize: '1.2rem', color: '#444', lineHeight: 1.7 }}>
-                {getContentBySection('comfort')?.content || 'İç mekan tasarımlarımızda, konforu ve estetiği buluşturuyoruz. Ferah ve aydınlık yaşam alanları, fonksiyonel çözümler ve modern dekorasyon anlayışıyla, evinizde her anı keyifle yaşamanız için çalışıyoruz.'}
+                {getContentBySection('comfort')?.content || 'BLR İnşaat olarak, konforlu yaşam alanları inşa ediyoruz.'}
               </p>
             </div>
             <div className="col-lg-6 d-flex justify-content-center">
               <div style={{ borderRadius: '24px', overflow: 'hidden', boxShadow: '0 4px 24px #0001', transition: 'transform 0.2s' }}>
                 <img 
-                  className="mob-mt-30" 
                   loading="lazy" 
                   alt="BLR İnşaat" 
-                  src={getImageUrl(getContentBySection('comfort'), "/front/gorsel/anasayfa/3.png")} 
-                  style={{ width: '100%', height: '340px', objectFit: 'cover', objectPosition: 'center' }} 
-                />
-              </div>
-            </div>
-          </div>
-
-          {/* İçerik 5 */}
-          <div className="row align-items-center" style={{ marginBottom: '48px' }}>
-            <div className="col-lg-6 m-a pc-p-70">
-              <div className="blr-title-2" style={{ fontSize: '2.5rem', fontWeight: 700, color: '#232617', marginBottom: '24px' }}>
-                {getContentBySection('parking')?.title || 'Konforlu ve Güvenli Otopark İmkanı'}
-              </div>
-              <p style={{ fontSize: '1.2rem', color: '#444', lineHeight: 1.7 }}>
-                {getContentBySection('parking')?.content || 'Her daireye özel, geniş ve güvenli otopark alanlarımız ile araçlarınız için de en iyi çözümleri sunuyoruz. Şehir hayatının park sorununu ortadan kaldırıyor, size ve ailenize rahat bir yaşam vadediyoruz.'}
-              </p>
-            </div>
-            <div className="col-lg-6 d-flex justify-content-center">
-              <div style={{ borderRadius: '24px', overflow: 'hidden', boxShadow: '0 4px 24px #0001', transition: 'transform 0.2s' }}>
-                <img 
-                  className="mob-mt-30" 
-                  loading="lazy" 
-                  alt="BLR İnşaat Otopark" 
-                  src={getImageUrl(getContentBySection('parking'), "/front/gorsel/anasayfa/6.png")} 
-                  style={{ width: '100%', height: '340px', objectFit: 'cover', objectPosition: 'center' }} 
-                />
-              </div>
-            </div>
-          </div>
-
-          {/* İçerik 6 */}
-          <div className="row align-items-center flex-row-reverse">
-            <div className="col-lg-6 m-a pc-p-70">
-              <div className="blr-title-2" style={{ fontSize: '2.5rem', fontWeight: 700, color: '#232617', marginBottom: '24px' }}>
-                {getContentBySection('social')?.title || 'Sosyal Yaşamın Kalbinde'}
-              </div>
-              <p style={{ fontSize: '1.2rem', color: '#444', lineHeight: 1.7 }}>
-                {getContentBySection('social')?.content || 'Projelerimizde, sadece bir ev değil, aynı zamanda sosyal yaşamın merkezinde olmanızı sağlıyoruz. Yeşil alanlar, çocuk oyun parkları, spor ve dinlenme alanları ile her yaştan birey için keyifli ve aktif bir yaşam sunuyoruz.'}
-              </p>
-            </div>
-            <div className="col-lg-6 d-flex justify-content-center">
-              <div style={{ borderRadius: '24px', overflow: 'hidden', boxShadow: '0 4px 24px #0001', transition: 'transform 0.2s' }}>
-                <img 
-                  className="mob-mt-30" 
-                  loading="lazy" 
-                  alt="BLR İnşaat Sosyal Alanlar" 
-                  src={getImageUrl(getContentBySection('social'), "/front/gorsel/anasayfa/5.png")} 
+                  src={getImageUrl(getContentBySection('comfort'), "/front/gorsel/genel/logo.png")} 
                   style={{ width: '100%', height: '340px', objectFit: 'cover', objectPosition: 'center' }} 
                 />
               </div>
@@ -333,10 +776,10 @@ const Home: React.FC = () => {
         <div className="container">
           <div className="text-center mb-5">
             <h2 style={{ fontSize: '2.5rem', fontWeight: 700, color: '#232617', marginBottom: '20px' }}>
-              {getContentBySection('services')?.title || 'Emlak Danışmanlığı'}
+              {getContentBySection('services')?.title || 'BLR İnşaat'}
             </h2>
             <p style={{ fontSize: '1.1rem', color: '#666', maxWidth: '600px', margin: '0 auto' }}>
-              {getContentBySection('services')?.content || 'Müşterilere emlak alım, satım ve kiralama süreçlerinde danışmanlık hizmetleri sunmaktadır.'}
+              {getContentBySection('services')?.content || 'BLR İnşaat olarak, kapsamlı hizmetler sunmaktayız.'}
             </p>
           </div>
           
@@ -399,59 +842,6 @@ const Home: React.FC = () => {
           </div>
         </div>
       </section>
-      <style>{`
-              @media (max-width: 1200px) {
-              .blr-title-2 {
-                font-size: 1.4rem !important;
-              }
-              .section-title {
-                font-size: 1.1rem !important;
-              }
-              .prj-img {
-                height: 160px !important;
-              }
-            }
-            @media (max-width: 991px) {
-              .blr-title-2 {
-                font-size: 1.5rem !important;
-              }
-            }
-  @media (max-width: 900px) {
-    .proje-1 .col-lg-3, .proje-1 .col-6 {
-      width: 50% !important;
-      max-width: 50% !important;
-      flex: 0 0 50% !important;
-    }
-    .proje-1 .p-9 {
-      padding: 8px !important;
-    }
-    .prj-img {
-      height: 120px !important;
-    }
-    .blr-title-2 {
-      font-size: 1.1rem !important;
-    }
-    .section-title {
-      font-size: 1rem !important;
-    }
-  }
-  @media (max-width: 600px) {
-    .proje-1 .col-lg-3, .proje-1 .col-6 {
-      width: 100% !important;
-      max-width: 100% !important;
-      flex: 0 0 100% !important;
-    }
-    .prj-img {
-      height: 80px !important;
-    }
-    .blr-title-2 {
-      font-size: 0.95rem !important;
-    }
-    .section-title {
-      font-size: 0.9rem !important;
-    }
-  }
-`}</style>
     </>
   );
 };

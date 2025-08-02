@@ -13,11 +13,8 @@ const SefaKalkan: React.FC = () => {
         setLoading(true);
         // Önce tüm içerikleri çek ve sefa_kalkan sayfasını ara
         const allContents = await siteContentService.getAll();
-        console.log('Tüm içerikler:', allContents);
-        
         // sefa_kalkan sayfası içeriklerini filtrele
         const contentsData = allContents.filter(content => content.page_name === 'sefa_kalkan');
-        console.log('Sefa Kalkan sayfası içerikleri:', contentsData);
         
         // Eğer sefa_kalkan sayfası içeriği yoksa, about sayfasından coordinator içeriğini al
         if (contentsData.length === 0) {
@@ -25,10 +22,8 @@ const SefaKalkan: React.FC = () => {
             content.page_name === 'about' && content.section_name === 'coordinator'
           );
           if (coordinatorContent) {
-            console.log('Coordinator içeriği bulundu:', coordinatorContent);
             setContents([coordinatorContent]);
           } else {
-            console.log('Coordinator içeriği bulunamadı');
             setContents([]);
           }
                  } else {

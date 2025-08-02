@@ -1,0 +1,1 @@
+INSERT INTO "public"."visits" ("id", "date", "title", "content", "slug", "created_at") VALUES ('1', '2025-07-23', 'İlk Blog Yazısı', 'Bu benim ilk blog yazımdır.', 'ilk-blog-yazisi', '2025-07-23 14:51:15.368747+00'), ('2', '2025-07-23', 'İkinci İçerik', 'İşte ikinci içeriğimiz.', 'ikinci-icerik', '2025-07-23 14:51:15.368747+00');

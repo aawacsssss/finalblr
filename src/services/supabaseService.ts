@@ -1,6 +1,6 @@
 import { supabase } from './supabaseClient';
 
-// Proje tipleri
+// Proje tipleri - Veritabanı ile uyumlu
 export interface Project {
   id?: number;
   title: string;
@@ -8,6 +8,10 @@ export interface Project {
   status: 'baslayan' | 'devam' | 'bitmis';
   images?: string[];
   technical_info?: any;
+  features?: string[];
+  video?: string;
+  map_embed_url?: string;
+  catalog?: string; // Dijital katalog linki
   location?: {
     address?: string;
     coordinates?: {
@@ -16,23 +20,24 @@ export interface Project {
     };
     map_embed_url?: string;
   };
-  map_embed_url?: string; // Google Maps iframe URL'si
   created_at?: string;
-  features?: string[];
-  social_facilities?: string[];
-  catalog?: string; // opsiyonel katalog linki
-  video?: string; // opsiyonel video linki
+  // Kaldırılan alanlar: social_facilities
 }
 
-// Slider tipi
+// Slider tipi - Veritabanı ile uyumlu
 export interface Slider {
   id?: number;
   title?: string;
   image: string;
   link?: string;
   order_index?: number;
-  status?: 'baslayan' | 'devam' | 'bitmis';
+  status?: 'baslayan' | 'devam' | 'bitmis'; // Veritabanında var
+  project_id?: number; // Proje ID'si - slider'ı proje ile ilişkilendirmek için
   created_at?: string;
+  // Görsel konumlandırma ve boyutlandırma özellikleri
+  image_fit?: 'cover' | 'contain' | 'fill' | 'scale-down';
+  image_position?: 'center' | 'top' | 'bottom' | 'left' | 'right' | 'top left' | 'top right' | 'bottom left' | 'bottom right';
+  background_color?: string;
 }
 
 // Site içerik tipi
@@ -47,11 +52,25 @@ export interface SiteContent {
   created_at?: string;
 }
 
-// Günlük ziyaretçi istatistiği için interface ve fonksiyonlar ekliyorum:
+// Günlük ziyaretçi istatistiği - Veritabanı ile uyumlu
 export interface Visit {
   id?: number;
   date: string; // YYYY-MM-DD
+  title?: string;      // Veritabanında var
+  content?: string;    // Veritabanında var
+  slug?: string;       // Veritabanında var
   count: number;
+  created_at?: string; // Veritabanında var
+}
+
+// İletişim mesajları tipi - Yeni eklenen
+export interface ContactMessage {
+  id?: number;
+  name: string;
+  email?: string;
+  phone: string;
+  message: string;
+  created_at?: string;
 }
 
 // Proje servisleri
@@ -129,12 +148,13 @@ export const projectService = {
 
 // Slider servisleri
 export const sliderService = {
-  // Tüm sliderları getir
+  // Tüm sliderları getir (cache temizleme ile)
   async getAll(): Promise<Slider[]> {
     const { data, error } = await supabase
       .from('sliders')
       .select('*')
-      .order('order_index', { ascending: true });
+      .order('order_index', { ascending: true })
+      .abortSignal(new AbortController().signal); // Cache'i temizle
     
     if (error) throw error;
     return data || [];
@@ -178,13 +198,14 @@ export const sliderService = {
 
 // Site içerik servisleri
 export const siteContentService = {
-  // Sayfa içeriklerini getir
+  // Sayfa içeriklerini getir (cache temizleme ile)
   async getByPage(pageName: string): Promise<SiteContent[]> {
     const { data, error } = await supabase
       .from('site_content')
       .select('*')
       .eq('page_name', pageName)
-      .order('order_index', { ascending: true });
+      .order('order_index', { ascending: true })
+      .abortSignal(new AbortController().signal); // Cache'i temizle
     
     if (error) throw error;
     return data || [];
@@ -192,17 +213,14 @@ export const siteContentService = {
 
   // İçerik güncelle
   async update(id: number, content: Partial<SiteContent>) {
-    console.log('siteContentService.update çağrıldı:', { id, content });
     const { data, error } = await supabase
       .from('site_content')
       .update(content)
       .eq('id', id)
       .select();
     if (error) {
-      console.error('siteContentService.update hatası:', error);
       throw error;
     }
-    console.log('siteContentService.update başarılı:', data);
     return data;
   },
   async create(content: SiteContent) {
@@ -214,19 +232,25 @@ export const siteContentService = {
 
   // Tüm site içeriklerini getir (page_name ve order_index'e göre sıralı)
   async getAll(): Promise<SiteContent[]> {
-    console.log('siteContentService.getAll çağrıldı');
     const { data, error } = await supabase
       .from('site_content')
       .select('*')
       .order('page_name', { ascending: true })
       .order('order_index', { ascending: true });
     if (error) {
-      console.error('siteContentService.getAll hatası:', error);
       throw error;
     }
-    console.log('siteContentService.getAll başarılı, veri sayısı:', data?.length || 0);
-    console.log('siteContentService.getAll veriler:', data);
     return data || [];
+  },
+
+  // İçerik sil
+  async delete(id: number): Promise<void> {
+    const { error } = await supabase
+      .from('site_content')
+      .delete()
+      .eq('id', id);
+    
+    if (error) throw error;
   },
 };
 
@@ -355,3 +379,214 @@ export async function getRecentActivities() {
   // Son 8 aktiviteyi döndür
   return activities.slice(0, 8);
 } 
+
+// İletişim mesajları servisleri - Yeni eklenen
+export const contactMessageService = {
+  // Tüm mesajları getir
+  async getAll(): Promise<ContactMessage[]> {
+    const { data, error } = await supabase
+      .from('contact_messages')
+      .select('*')
+      .order('created_at', { ascending: false });
+    
+    if (error) throw error;
+    return data || [];
+  },
+
+  // Tek mesaj getir
+  async getById(id: number): Promise<ContactMessage | null> {
+    const { data, error } = await supabase
+      .from('contact_messages')
+      .select('*')
+      .eq('id', id)
+      .maybeSingle();
+    
+    if (error) throw error;
+    return data;
+  },
+
+  // Mesaj ekle
+  async create(message: ContactMessage): Promise<ContactMessage | null> {
+    const { data, error } = await supabase
+      .from('contact_messages')
+      .insert([message])
+      .select('*')
+      .maybeSingle();
+    
+    if (error) throw error;
+    return data;
+  },
+
+  // Mesaj güncelle
+  async update(id: number, message: Partial<ContactMessage>): Promise<ContactMessage | null> {
+    const { data, error } = await supabase
+      .from('contact_messages')
+      .update(message)
+      .eq('id', id)
+      .select('*')
+      .maybeSingle();
+    
+    if (error) throw error;
+    return data;
+  },
+
+  // Mesaj sil
+  async delete(id: number): Promise<void> {
+    const { error } = await supabase
+      .from('contact_messages')
+      .delete()
+      .eq('id', id);
+    
+    if (error) throw error;
+  }
+};
+
+// WhatsApp tıklamaları servisleri - Yeni eklenen
+export const whatsappClickService = {
+  // Tüm tıklamaları getir
+  async getAll(): Promise<any[]> {
+    const { data, error } = await supabase
+      .from('whatsapp_clicks')
+      .select('*')
+      .order('clicked_at', { ascending: false });
+    
+    if (error) throw error;
+    return data || [];
+  },
+
+  // Tıklama sil
+  async delete(id: number): Promise<void> {
+    const { error } = await supabase
+      .from('whatsapp_clicks')
+      .delete()
+      .eq('id', id);
+    
+    if (error) throw error;
+  }
+}; 
+
+// Site ayarları tipi
+export interface SiteSettings {
+  id?: number;
+  site_title: string;
+  site_description?: string;
+  contact_email?: string;
+  phone_number?: string;
+  address?: string;
+  facebook_url?: string;
+  instagram_url?: string;
+  youtube_url?: string;
+  maintenance_mode?: boolean;
+  email_notifications?: boolean;
+  auto_backup?: boolean;
+  created_at?: string;
+  updated_at?: string;
+}
+
+// Bakım modu ayarları tipi
+export interface MaintenanceSettings {
+  id?: number;
+  is_maintenance_mode: boolean;
+  maintenance_title?: string;
+  maintenance_message?: string;
+  maintenance_image?: string;
+  contact_phone?: string;
+  contact_email?: string;
+  estimated_duration?: string;
+  created_at?: string;
+  updated_at?: string;
+}
+
+// Bakım modu servisleri
+export const maintenanceService = {
+  // Bakım modu ayarlarını getir
+  async getSettings(): Promise<MaintenanceSettings | null> {
+    const { data, error } = await supabase
+      .from('maintenance_settings')
+      .select('*')
+      .limit(1)
+      .single();
+    
+    if (error) {
+      // Eğer kayıt yoksa varsayılan ayarları döndür
+      if (error.code === 'PGRST116') {
+        return {
+          is_maintenance_mode: false,
+          maintenance_title: 'BLR İNŞAAT - Bakım Modu',
+          maintenance_message: 'Sitemiz şu anda bakım modunda. Lütfen daha sonra tekrar deneyiniz.',
+          contact_phone: '0533 368 1965',
+          contact_email: 'iletisim@blrinsaat.com',
+          estimated_duration: '2-3 saat'
+        };
+      }
+      throw error;
+    }
+    return data;
+  },
+
+  // Bakım modu ayarlarını güncelle
+  async updateSettings(settings: Partial<MaintenanceSettings>): Promise<MaintenanceSettings | null> {
+    const { data, error } = await supabase
+      .from('maintenance_settings')
+      .upsert([settings])
+      .select('*')
+      .maybeSingle();
+    
+    if (error) throw error;
+    return data;
+  },
+
+  // Bakım modunu aç/kapat
+  async toggleMaintenanceMode(isEnabled: boolean): Promise<void> {
+    const { error } = await supabase
+      .from('maintenance_settings')
+      .upsert([{ is_maintenance_mode: isEnabled }]);
+    
+    if (error) throw error;
+  }
+}; 
+
+// Site ayarları servisleri
+export const siteSettingsService = {
+  // Site ayarlarını getir
+  async getSettings(): Promise<SiteSettings | null> {
+    const { data, error } = await supabase
+      .from('site_settings')
+      .select('*')
+      .limit(1)
+      .single();
+    
+    if (error) {
+      // Eğer kayıt yoksa varsayılan ayarları döndür
+      if (error.code === 'PGRST116') {
+        return {
+          site_title: 'BLR İnşaat',
+          site_description: 'Türkiye genelinde 40 yıldır inşaat sektöründe...',
+          contact_email: 'info@blrinsaat.com',
+          phone_number: '',
+          address: '',
+          facebook_url: 'https://www.facebook.com/profile.php?id=61579125501611',
+                      instagram_url: 'https://www.instagram.com/blryapiinsaat/',
+          youtube_url: 'https://youtube.com/blrinsaat',
+          maintenance_mode: false,
+          email_notifications: false,
+          auto_backup: false
+        };
+      }
+      throw error;
+    }
+    return data;
+  },
+
+  // Site ayarlarını güncelle
+  async updateSettings(settings: Partial<SiteSettings>): Promise<SiteSettings | null> {
+    const { data, error } = await supabase
+      .from('site_settings')
+      .upsert([settings])
+      .select('*')
+      .maybeSingle();
+    
+    if (error) throw error;
+    return data;
+  }
+}; 

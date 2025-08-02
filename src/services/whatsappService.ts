@@ -52,18 +52,14 @@ class WhatsAppService {
         });
 
       if (error) {
-        console.error('WhatsApp click kaydetme hatası:', error);
         // Tablo yoksa sessizce geç
         if (error.code === '42P01') {
-          console.log('whatsapp_clicks tablosu mevcut değil, kayıt atlanıyor');
           return;
         }
       }
     } catch (error) {
-      console.error('WhatsApp click kaydetme hatası:', error);
       // Tablo yoksa sessizce geç
       if (error instanceof Error && error.message.includes('does not exist')) {
-        console.log('whatsapp_clicks tablosu mevcut değil, kayıt atlanıyor');
         return;
       }
     }
@@ -82,19 +78,11 @@ class WhatsAppService {
           .from('whatsapp_clicks')
           .select('*', { count: 'exact', head: true });
 
-        if (totalError) {
-          console.error('Toplam tıklama sayısı alınamadı:', totalError);
-        }
-
         // Bugünkü tıklamalar
         const { data: todayClicks, count: todayCount, error: todayError } = await supabase
           .from('whatsapp_clicks')
           .select('*', { count: 'exact', head: true })
           .gte('clicked_at', today.toISOString());
-
-        if (todayError) {
-          console.error('Bugünkü tıklama sayısı alınamadı:', todayError);
-        }
 
         // Lokasyona göre tıklamalar (bugün)
         const { data: locationStats, error: locationError } = await supabase
@@ -102,20 +90,12 @@ class WhatsAppService {
           .select('button_location')
           .gte('clicked_at', today.toISOString());
 
-        if (locationError) {
-          console.error('Lokasyon istatistikleri alınamadı:', locationError);
-        }
-
         // Projeye göre tıklamalar (bugün)
         const { data: projectStats, error: projectError } = await supabase
           .from('whatsapp_clicks')
           .select('project_id, project_title')
           .not('project_id', 'is', null)
           .gte('clicked_at', today.toISOString());
-
-        if (projectError) {
-          console.error('Proje istatistikleri alınamadı:', projectError);
-        }
 
         // Lokasyon istatistiklerini hesapla
         const byLocation = {
@@ -161,11 +141,7 @@ class WhatsAppService {
           daily_stats: [] // Şimdilik boş
         };
       } catch (error) {
-        console.error('WhatsApp istatistikleri getirme hatası:', error);
         // Tablo yoksa boş istatistikler döndür
-        if (error instanceof Error && error.message.includes('does not exist')) {
-          console.log('whatsapp_clicks tablosu mevcut değil, boş istatistikler döndürülüyor');
-        }
         return {
           total_clicks: 0,
           today_clicks: 0,
@@ -177,7 +153,7 @@ class WhatsAppService {
         };
       }
     } catch (error) {
-      console.error('WhatsApp istatistikleri getirme hatası:', error);
+      // Hata durumunda boş istatistikler döndür
       return {
         total_clicks: 0,
         today_clicks: 0,

@@ -9,6 +9,7 @@ import OngoingProjects from './pages/OngoingProjects';
 import CompletedProjects from './pages/CompletedProjects';
 import UpcomingProjects from './pages/UpcomingProjects';
 import About from './pages/About';
+import FaaliyetAlanlari from './pages/FaaliyetAlanlari';
 import SefaKalkan from './pages/SefaKalkan';
 import Office from './pages/Office';
 import Contact from './pages/Contact';
@@ -32,6 +33,7 @@ function AppRoutesWithLayout() {
           <Route path="/tamamlanan-projeler" element={<CompletedProjects />} />
           <Route path="/baslanacak-projeler" element={<UpcomingProjects />} />
           <Route path="/hakkimizda" element={<About />} />
+          <Route path="/faaliyet-alanlari" element={<FaaliyetAlanlari />} />
           <Route path="/sefa-kalkan" element={<SefaKalkan />} />
           <Route path="/ofis" element={<Office />} />
           <Route path="/iletisim" element={<Contact />} />

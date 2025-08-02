@@ -7,6 +7,23 @@
   image-rendering: crisp-edges;
 }
 
+/* Project Buttons Container */
+.project-buttons-container {
+  position: relative;
+  z-index: 10;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(10px);
+  border-radius: 20px;
+  padding: 8px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
+}
+
+.project-buttons-container:hover {
+  background: rgba(255, 255, 255, 1);
+  box-shadow: 0 6px 25px rgba(0, 0, 0, 0.15);
+}
+
 .mySwiper2 .swiper-slide > div {
   aspect-ratio: 16/9;
   height: auto;

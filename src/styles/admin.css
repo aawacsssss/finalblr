@@ -1,0 +1,367 @@
+/* Admin Panel Styles - BLR İnşaat */
+
+/* ===== ADMIN PANEL BASE STYLES ===== */
+.admin-panel {
+  font-family: var(--font-family-primary);
+  background: var(--admin-bg);
+  min-height: 100vh;
+  transition: var(--transition-normal);
+}
+
+/* ===== ADMIN SIDEBAR ===== */
+.admin-sidebar {
+  background: var(--admin-sidebar);
+  color: var(--admin-accent);
+  width: 80px;
+  min-width: 80px;
+  height: 100vh;
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: var(--z-fixed);
+  transition: var(--transition-normal);
+  border-right: 1px solid var(--admin-accent);
+}
+
+.admin-sidebar.dark {
+  background: var(--admin-sidebar-dark);
+}
+
+.admin-sidebar .logo {
+  width: 48px;
+  height: 48px;
+  margin: 1rem auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.admin-sidebar .logo img {
+  width: 38px;
+  height: 38px;
+  object-fit: contain;
+}
+
+.admin-sidebar .menu {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  align-items: center;
+  padding: 1rem 0;
+}
+
+.admin-sidebar .menu-item {
+  min-width: 0;
+  width: 48px;
+  height: 48px;
+  color: var(--admin-accent);
+  background: transparent;
+  border-radius: var(--border-radius-md);
+  margin-bottom: 0.125rem;
+  box-shadow: none;
+  position: relative;
+  transition: var(--transition-normal);
+  font-family: var(--font-family-primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.admin-sidebar .menu-item:hover {
+  background: var(--admin-accent);
+  color: var(--admin-primary);
+  box-shadow: var(--shadow-md);
+}
+
+.admin-sidebar .menu-item.active {
+  color: var(--admin-primary);
+  background: var(--admin-accent);
+  box-shadow: var(--shadow-md);
+}
+
+.admin-sidebar .menu-item.active::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 8px;
+  bottom: 8px;
+  width: 4px;
+  border-radius: var(--border-radius-sm);
+  background: var(--admin-primary);
+}
+
+/* ===== ADMIN MAIN CONTENT ===== */
+.admin-main {
+  flex: 1;
+  padding: 1rem;
+  transition: var(--transition-normal);
+  background: var(--admin-bg);
+  height: 100vh;
+  overflow: auto;
+}
+
+/* ===== ADMIN CARDS ===== */
+.admin-card {
+  background: var(--admin-card);
+  border-radius: var(--border-radius-xl);
+  box-shadow: var(--shadow-md);
+  padding: 1.5rem;
+  margin-bottom: 1rem;
+  transition: var(--transition-normal);
+}
+
+.admin-card:hover {
+  box-shadow: var(--shadow-lg);
+  transform: translateY(-2px);
+}
+
+/* ===== ADMIN BUTTONS ===== */
+.admin-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.75rem 1.5rem;
+  border-radius: var(--border-radius-lg);
+  font-weight: var(--font-weight-semibold);
+  font-size: var(--font-size-sm);
+  transition: var(--transition-normal);
+  cursor: pointer;
+  border: none;
+  text-decoration: none;
+  font-family: var(--font-family-primary);
+}
+
+.admin-btn-primary {
+  background: linear-gradient(135deg, #256353 0%, #4a7c59 100%);
+  color: var(--white);
+  box-shadow: 0 8px 25px rgba(37, 99, 83, 0.3);
+}
+
+.admin-btn-primary:hover {
+  background: linear-gradient(135deg, #1e4d3f 0%, #3a6b4a 100%);
+  box-shadow: 0 12px 35px rgba(37, 99, 83, 0.4);
+  transform: translateY(-2px);
+}
+
+.admin-btn-secondary {
+  background: var(--admin-accent);
+  color: var(--admin-primary);
+  box-shadow: var(--shadow-sm);
+}
+
+.admin-btn-secondary:hover {
+  background: var(--admin-primary);
+  color: var(--admin-accent);
+  box-shadow: var(--shadow-md);
+}
+
+.admin-btn-danger {
+  background: var(--danger-color);
+  color: var(--white);
+}
+
+.admin-btn-danger:hover {
+  background: #c82333;
+  box-shadow: var(--shadow-md);
+}
+
+/* ===== ADMIN FORMS ===== */
+.admin-form {
+  display: grid;
+  gap: 1rem;
+}
+
+.admin-input {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius-md);
+  font-size: var(--font-size-base);
+  font-family: var(--font-family-primary);
+  transition: var(--transition-normal);
+  background: var(--bg-primary);
+  color: var(--text-primary);
+}
+
+.admin-input:focus {
+  outline: none;
+  border-color: var(--admin-accent);
+  box-shadow: 0 0 0 3px rgba(230, 208, 156, 0.1);
+}
+
+.admin-input::placeholder {
+  color: var(--text-muted);
+}
+
+/* ===== ADMIN TABLES ===== */
+.admin-table {
+  width: 100%;
+  border-collapse: collapse;
+  background: var(--admin-card);
+  border-radius: var(--border-radius-lg);
+  overflow: hidden;
+  box-shadow: var(--shadow-sm);
+}
+
+.admin-table th {
+  background: var(--admin-primary);
+  color: var(--white);
+  padding: 1rem;
+  text-align: left;
+  font-weight: var(--font-weight-semibold);
+  font-size: var(--font-size-sm);
+}
+
+.admin-table td {
+  padding: 1rem;
+  border-bottom: 1px solid var(--border-light);
+  font-size: var(--font-size-sm);
+}
+
+.admin-table tr:hover {
+  background: var(--bg-secondary);
+}
+
+/* ===== ADMIN MODALS ===== */
+.admin-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: var(--z-modal);
+  backdrop-filter: blur(4px);
+}
+
+.admin-modal-content {
+  background: var(--admin-card);
+  border-radius: var(--border-radius-xl);
+  padding: 2rem;
+  max-width: 500px;
+  width: 90%;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: var(--shadow-2xl);
+}
+
+/* ===== ADMIN LOADING ===== */
+.admin-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 200px;
+}
+
+.admin-spinner {
+  width: 40px;
+  height: 40px;
+  border: 4px solid var(--border-light);
+  border-top: 4px solid var(--admin-accent);
+  border-radius: 50%;
+  animation: admin-spin 1s linear infinite;
+}
+
+@keyframes admin-spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* ===== ADMIN RESPONSIVE ===== */
+@media (max-width: 768px) {
+  .admin-sidebar {
+    width: 100%;
+    height: auto;
+    position: relative;
+    transform: translateX(-100%);
+    transition: var(--transition-normal);
+  }
+  
+  .admin-sidebar.open {
+    transform: translateX(0);
+  }
+  
+  .admin-main {
+    padding: 0.5rem;
+  }
+  
+  .admin-card {
+    padding: 1rem;
+  }
+  
+  .admin-modal-content {
+    width: 95%;
+    padding: 1.5rem;
+  }
+}
+
+/* ===== ADMIN DARK MODE ===== */
+.admin-panel[data-theme="dark"] {
+  --admin-bg: #181c24;
+  --admin-card: #2d3748;
+  --text-primary: #f7fafc;
+  --text-secondary: #e2e8f0;
+  --border-color: #4a5568;
+}
+
+/* ===== ADMIN ANIMATIONS ===== */
+.admin-fade-in {
+  animation: admin-fade-in 0.3s ease-in-out;
+}
+
+@keyframes admin-fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.admin-slide-in {
+  animation: admin-slide-in 0.3s ease-out;
+}
+
+@keyframes admin-slide-in {
+  from {
+    transform: translateX(-100%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+
+/* ===== ADMIN UTILITIES ===== */
+.admin-text-center { text-align: center; }
+.admin-text-left { text-align: left; }
+.admin-text-right { text-align: right; }
+
+.admin-mb-1 { margin-bottom: var(--spacing-sm); }
+.admin-mb-2 { margin-bottom: var(--spacing-md); }
+.admin-mb-3 { margin-bottom: var(--spacing-lg); }
+.admin-mb-4 { margin-bottom: var(--spacing-xl); }
+
+.admin-mt-1 { margin-top: var(--spacing-sm); }
+.admin-mt-2 { margin-top: var(--spacing-md); }
+.admin-mt-3 { margin-top: var(--spacing-lg); }
+.admin-mt-4 { margin-top: var(--spacing-xl); }
+
+.admin-p-1 { padding: var(--spacing-sm); }
+.admin-p-2 { padding: var(--spacing-md); }
+.admin-p-3 { padding: var(--spacing-lg); }
+.admin-p-4 { padding: var(--spacing-xl); }
+
+.admin-rounded { border-radius: var(--border-radius-md); }
+.admin-rounded-lg { border-radius: var(--border-radius-lg); }
+.admin-rounded-xl { border-radius: var(--border-radius-xl); }
+
+.admin-shadow { box-shadow: var(--shadow-md); }
+.admin-shadow-lg { box-shadow: var(--shadow-lg); }
+.admin-shadow-xl { box-shadow: var(--shadow-xl); } 

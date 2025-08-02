@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { projectService, sliderService, siteContentService, Project, Slider, SiteContent } from '../services/supabaseService';
+import { projectService, sliderService, siteContentService, Project, Slider, SiteContent, siteSettingsService, SiteSettings } from '../services/supabaseService';
 import { uploadProjectImages } from '../services/supabaseService';
 import { visitService, Visit } from '../services/supabaseService';
 import { useTheme } from '@mui/material/styles';
@@ -17,6 +17,11 @@ import LogoutIcon from '@mui/icons-material/Logout';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import AssignmentIcon from '@mui/icons-material/Assignment';
+import BugReportIcon from '@mui/icons-material/BugReport';
+import LinkIcon from '@mui/icons-material/Link';
+import DatabaseIcon from '@mui/icons-material/Storage';
+
+
 import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
 import AddIcon from '@mui/icons-material/Add';
 import CloudUploadIcon from '@mui/icons-material/CloudUpload';
@@ -46,6 +51,8 @@ import CloseIcon from '@mui/icons-material/Close';
 import TooltipMUI from '@mui/material/Tooltip';
 import { DragDropContext, Droppable, Draggable, DropResult } from '@hello-pangea/dnd';
 import { useAuth } from '../contexts/AuthContext';
+import ReactQuill from 'react-quill';
+import 'react-quill/dist/quill.snow.css';
 
 // Animasyonlu sayaç için yardımcı fonksiyon
 type AnimatedCountTarget = number;
@@ -89,6 +96,49 @@ function moveArrayItem<T>(arr: T[], from: number, to: number): T[] {
   return newArr;
 }
 
+// Quill editör konfigürasyonu
+const QUILL_MODULES = {
+  toolbar: [
+    [{ 'header': [1, 2, 3, false] }],
+    ['bold', 'italic', 'underline', 'strike'],
+    [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+    [{ 'align': [] }],
+    [{ 'color': [] }, { 'background': [] }],
+    ['link', 'image'],
+    ['clean']
+  ],
+};
+
+const QUILL_FORMATS = [
+  'header', 'bold', 'italic', 'underline', 'strike',
+  'list', 'bullet', 'align', 'color', 'background',
+  'link', 'image'
+];
+
+// Quill editör stilleri
+const QUILL_STYLES = {
+  '.ql-editor': {
+    minHeight: '100px',
+    fontSize: '14px',
+    lineHeight: '1.6',
+    fontFamily: 'inherit'
+  },
+  '.ql-toolbar': {
+    borderTop: '1px solid #ccc',
+    borderLeft: '1px solid #ccc',
+    borderRight: '1px solid #ccc',
+    borderRadius: '4px 4px 0 0',
+    backgroundColor: '#f8f9fa'
+  },
+  '.ql-container': {
+    borderBottom: '1px solid #ccc',
+    borderLeft: '1px solid #ccc',
+    borderRight: '1px solid #ccc',
+    borderRadius: '0 0 4px 4px',
+    fontSize: '14px'
+  }
+};
+
 // Renk ve font teması
 const MODERN_COLORS = {
   primary: '#1a2236',
@@ -104,15 +154,6 @@ const MODERN_FONT = 'Montserrat, Poppins, Arial, sans-serif';
 function Admin() {
   const { user: authUser, signIn, signOut, loading: authLoading } = useAuth();
   
-  // iframe kodundan URL çıkarma fonksiyonu
-  const extractUrlFromIframe = (iframeCode: string) => {
-    if (iframeCode.includes('<iframe')) {
-      const match = iframeCode.match(/src="([^"]+)"/);
-      return match ? match[1] : iframeCode;
-    }
-    return iframeCode;
-  };
-  
   // === GENEL UI STATE ===
   const [page, setPage] = useState(() => {
     return authUser ? 'dashboard' : 'login';
@@ -123,22 +164,9 @@ function Admin() {
   const open = Boolean(anchorEl);
 
   // === KULLANICI GİRİŞ STATE ===
-  const [email, setEmail] = useState(() => localStorage.getItem('admin_email') || '');
-  const [password, setPassword] = useState(() => localStorage.getItem('admin_password') || '');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [error, setError] = useState('');
-
-  // Giriş bilgilerini kaydet
-  useEffect(() => {
-    if (email) localStorage.setItem('admin_email', email);
-    if (password) localStorage.setItem('admin_password', password);
-  }, [email, password]);
-
-  // Oturum açıkken sayfa yenilense bile çıkış yapmasın
-  useEffect(() => {
-    if (authUser && page === 'login') {
-      setPage('dashboard');
-    }
-  }, [authUser, page]);
 
   // === PROJE YÖNETİMİ STATE ===
   const [projects, setProjects] = useState<Project[]>([]);
@@ -152,7 +180,7 @@ function Admin() {
 
   // === SLIDER YÖNETİMİ STATE ===
   const [sliders, setSliders] = useState<Slider[]>([]);
-  const [newSlider, setNewSlider] = useState<Partial<Slider>>({ title: '', image: '', link: '', order_index: 0, status: 'devam' });
+  const [newSlider, setNewSlider] = useState<Partial<Slider>>({ title: '', image: '', link: '', order_index: 0, status: 'devam', project_id: undefined });
   const [editingSlider, setEditingSlider] = useState<Slider | null>(null);
   const [sliderAddMode, setSliderAddMode] = useState<'manual' | 'project'>('manual');
   const [selectedProjectForSlider, setSelectedProjectForSlider] = useState<Project | null>(null);
@@ -185,6 +213,7 @@ const handleDeleteContent = async (id: number) => {
   const [todayVisits, setTodayVisits] = useState(0);
   const [weeklyVisits, setWeeklyVisits] = useState<Visit[]>([]);
   const [weeklyTotal, setWeeklyTotal] = useState(0);
+  const [monthlyVisits, setMonthlyVisits] = useState(0);
   const [mostVisited, setMostVisited] = useState<Visit | null>(null);
   const [visitAvg, setVisitAvg] = useState(0);
   const [lastVisit, setLastVisit] = useState<string>('');
@@ -211,6 +240,9 @@ const handleDeleteContent = async (id: number) => {
     emailNotifications: false,
     autoBackup: false,
   });
+  
+  // Site ayarları state'i
+  const [siteSettings, setSiteSettings] = useState<SiteSettings | null>(null);
   const [settingsSaved, setSettingsSaved] = useState(false);
   const [contentSaved, setContentSaved] = useState(false);
   const [settingsLoading, setSettingsLoading] = useState(false);
@@ -267,15 +299,10 @@ const handleDeleteContent = async (id: number) => {
         
         // İçerikler
         if (contentsData.status === 'fulfilled') {
-          console.log('İçerikler yüklendi, ham veri:', contentsData.value);
-          
           // Sefa Kalkan içeriğini özel olarak kontrol et
           const sefaKalkanContent = contentsData.value.find(item => 
             item.title && item.title.includes('Sefa Kalkan')
           );
-          if (sefaKalkanContent) {
-            console.log('Sefa Kalkan içeriği bulundu:', sefaKalkanContent);
-          }
           
           const processedContents = contentsData.value.map(item => ({
             ...item,
@@ -287,7 +314,6 @@ const handleDeleteContent = async (id: number) => {
           }));
           
           setSiteContents(processedContents);
-          console.log('İşlenmiş siteContents:', processedContents);
         } else {
           console.error('İçerikler yükleme hatası:', contentsData.reason);
         }
@@ -313,99 +339,46 @@ const handleDeleteContent = async (id: number) => {
       try {
         setSettingsLoading(true);
         
-        // Logo yükleme işlemini site_settings'den yap
-        let headerLogo = '';
-        let footerLogo = '';
-
         // Site ayarlarını yükle
-        const { data: settingsData, error: settingsError } = await supabase
-          .from('site_settings')
-          .select('*')
-          .eq('id', 1)
-          .single();
+        const siteSettingsData = await siteSettingsService.getSettings();
+        setSiteSettings(siteSettingsData);
 
-        if (settingsError) {
-          console.error('Site ayarları yükleme hatası:', settingsError);
-          // Hata durumunda varsayılan değerler kullan
-          setSettings(prev => ({
-            ...prev,
-            facebookUrl: 'https://facebook.com',
-            instagramUrl: 'https://instagram.com',
-            youtubeUrl: 'https://youtube.com',
-            siteTitle: 'BLR İnşaat',
-            siteDescription: 'Türkiye genelinde 40 yıldır inşaat sektöründe...',
-            contactEmail: 'info@blrinsaat.com',
-            phoneNumber: '',
-            address: '',
-            headerLogo: '',
-            footerLogo: ''
-          }));
-          setSettingsLoaded(true);
-          return;
-        }
+        if (siteSettingsData) {
+          // Logo yükleme işlemini site_settings'den yap
+          let headerLogo = '';
+          let footerLogo = '';
 
-        if (settingsData) {
           // Logo ayarlarını site_settings'den kontrol et
-          if (!headerLogo && settingsData.facebook_url && settingsData.facebook_url.startsWith('HEADER_LOGO_DATA:')) {
-            headerLogo = settingsData.facebook_url.replace('HEADER_LOGO_DATA:', '');
+          if (!headerLogo && siteSettingsData.facebook_url && siteSettingsData.facebook_url.startsWith('HEADER_LOGO_DATA:')) {
+            headerLogo = siteSettingsData.facebook_url.replace('HEADER_LOGO_DATA:', '');
           }
-          if (!footerLogo && settingsData.instagram_url && settingsData.instagram_url.startsWith('FOOTER_LOGO_DATA:')) {
-            footerLogo = settingsData.instagram_url.replace('FOOTER_LOGO_DATA:', '');
+          if (!footerLogo && siteSettingsData.instagram_url && siteSettingsData.instagram_url.startsWith('FOOTER_LOGO_DATA:')) {
+            footerLogo = siteSettingsData.instagram_url.replace('FOOTER_LOGO_DATA:', '');
           }
 
           setSettings(prev => ({
             ...prev,
-            facebookUrl: settingsData.facebook_url || 'https://facebook.com',
-            instagramUrl: settingsData.instagram_url || 'https://instagram.com',
-            youtubeUrl: settingsData.youtube_url || 'https://youtube.com',
-            officeVideoUrl: settingsData.youtube_url ? 
-              (settingsData.youtube_url.startsWith('VIDEO_DATA:') ? 
-                settingsData.youtube_url.replace('VIDEO_DATA:', '') : 
-                settingsData.youtube_url) : 
+            facebookUrl: siteSettingsData.facebook_url || '',
+            instagramUrl: siteSettingsData.instagram_url || '',
+            youtubeUrl: siteSettingsData.youtube_url || '',
+            officeVideoUrl: siteSettingsData.youtube_url ? 
+              (siteSettingsData.youtube_url.startsWith('VIDEO_DATA:') ? 
+                siteSettingsData.youtube_url.replace('VIDEO_DATA:', '') : 
+                siteSettingsData.youtube_url) : 
               prev.officeVideoUrl,
-            siteTitle: settingsData.site_title || 'BLR İnşaat',
-            siteDescription: settingsData.site_description || 'Türkiye genelinde 40 yıldır inşaat sektöründe...',
-            contactEmail: settingsData.contact_email || 'info@blrinsaat.com',
-            phoneNumber: settingsData.phone_number || '',
-            address: settingsData.address || '',
+            siteTitle: siteSettingsData.site_title || prev.siteTitle,
+            siteDescription: siteSettingsData.site_description || prev.siteDescription,
+            contactEmail: siteSettingsData.contact_email || prev.contactEmail,
+            phoneNumber: siteSettingsData.phone_number || prev.phoneNumber,
+            address: siteSettingsData.address || prev.address,
             headerLogo: headerLogo,
             footerLogo: footerLogo
-          }));
-        } else {
-          // Veri yoksa varsayılan değerler kullan
-          setSettings(prev => ({
-            ...prev,
-            facebookUrl: 'https://facebook.com',
-            instagramUrl: 'https://instagram.com',
-            youtubeUrl: 'https://youtube.com',
-            siteTitle: 'BLR İnşaat',
-            siteDescription: 'Türkiye genelinde 40 yıldır inşaat sektöründe...',
-            contactEmail: 'info@blrinsaat.com',
-            phoneNumber: '',
-            address: '',
-            headerLogo: '',
-            footerLogo: ''
           }));
         }
         
         setSettingsLoaded(true);
       } catch (error) {
         console.error('Ayarlar yüklenirken hata:', error);
-        // Hata durumunda varsayılan değerler kullan
-        setSettings(prev => ({
-          ...prev,
-          facebookUrl: 'https://facebook.com',
-          instagramUrl: 'https://instagram.com',
-          youtubeUrl: 'https://youtube.com',
-          siteTitle: 'BLR İnşaat',
-          siteDescription: 'Türkiye genelinde 40 yıldır inşaat sektöründe...',
-          contactEmail: 'info@blrinsaat.com',
-          phoneNumber: '',
-          address: '',
-          headerLogo: '',
-          footerLogo: ''
-        }));
-        setSettingsLoaded(true);
       } finally {
         setSettingsLoading(false);
       }
@@ -424,49 +397,25 @@ const handleDeleteContent = async (id: number) => {
     }
   }, [page, dataLoaded]);
 
-  // === EKLENECEK SLIDER VERİLERİ ===
-  const defaultSliders: Slider[] = [
-    {
-      id: 1,
-      title: 'BLR TOWER EDİRNE',
-      image: '/front/gorsel/slider/blr-tower.jpg',
-      link: '/blr-tower',
-      order_index: 1,
-      status: 'devam'
-    },
-    {
-      id: 2,
-      title: 'CENTRO',
-      image: '/front/gorsel/slider/centro.jpg',
-      link: '/centro',
-      order_index: 2,
-      status: 'bitmis'
-    },
-    {
-      id: 3,
-      title: 'GARDENYA VILLA',
-      image: '/front/gorsel/slider/gardenya-villa.jpg',
-      link: '/gardenya-villa',
-      order_index: 3,
-      status: 'baslayan'
-    },
-    {
-      id: 4,
-      title: 'LUSSO',
-      image: '/front/gorsel/slider/lusso.jpg',
-      link: '/lusso',
-      order_index: 4,
-      status: 'devam'
-    },
-    {
-      id: 5,
-      title: 'VIA PALAZZO',
-      image: '/front/gorsel/slider/via-palazzo.jpg',
-      link: '/via-palazzo',
-      order_index: 5,
-      status: 'bitmis'
+  // === OTURUM KONTROLÜ HOOK'U ===
+  useEffect(() => {
+    // Auth loading durumunda bekle
+    if (authLoading) return;
+    
+    // Kullanıcı giriş yapmamışsa login sayfasına yönlendir
+    if (!authUser && page !== 'login') {
+      setPage('login');
+      setDataLoaded(false);
     }
-  ];
+    
+    // Kullanıcı giriş yapmışsa dashboard'a yönlendir
+    if (authUser && page === 'login') {
+      setPage('dashboard');
+      loadData();
+    }
+  }, [authUser, authLoading, page]);
+
+  
 
   // === GENEL SAYFA DEĞİŞTİRME FONKSİYONU ===
   const handlePageChange = (newPage: string) => {
@@ -486,10 +435,14 @@ const handleDeleteContent = async (id: number) => {
       if (error) {
         setError('Giriş başarısız: ' + error.message);
       } else {
-      setPage('dashboard');
-      loadData();
+        // Başarılı giriş sonrası state'i temizle
+        setEmail('');
+        setPassword('');
+        setError('');
+        // Dashboard'a yönlendirme otomatik olarak useEffect ile yapılacak
       }
     } catch (err) {
+      console.error('Giriş hatası:', err);
       setError('Giriş sırasında hata oluştu!');
     }
   };
@@ -497,9 +450,12 @@ const handleDeleteContent = async (id: number) => {
   const handleLogout = async () => {
     try {
       await signOut();
-      setPage('login');
+      // State'leri temizle
       setEmail('');
       setPassword('');
+      setError('');
+      setDataLoaded(false);
+      // Login sayfasına yönlendirme otomatik olarak useEffect ile yapılacak
     } catch (err) {
       console.error('Çıkış sırasında hata:', err);
     }
@@ -515,34 +471,39 @@ const handleDeleteContent = async (id: number) => {
       ]);
       setProjects(projectsData);
       setSliders(slidersData);
+      
+      const officeContent = contentsData.find(item => item.section_name === 'office');
+      
       setSiteContents(
-        contentsData.map(item => ({
-          ...item,
-          images: !item.images
-            ? []
-            : typeof item.images === 'string'
-              ? JSON.parse(item.images)
-              : item.images
-        }))
+        contentsData.map(item => {
+          let processedImages;
+          if (!item.images) {
+            processedImages = [];
+          } else if (typeof item.images === 'string') {
+            try {
+              processedImages = JSON.parse(item.images);
+            } catch (e) {
+              console.error('JSON parse error for item:', item.section_name, e);
+              processedImages = [];
+            }
+          } else {
+            processedImages = item.images;
+          }
+          
+
+          
+          return {
+            ...item,
+            images: processedImages
+          };
+        })
       );
     } catch (err) {
-      console.error('Veri yükleme hatası:', err);
+      // Veri yükleme hatası sessizce geçirildi
     }
   };
 
-  // === EKLENECEK SLIDER VERİLERİNİ SUPABASE'E EKLEME ===
-  const addDefaultSliders = async () => {
-    try {
-      for (const slider of defaultSliders) {
-        await sliderService.create(slider);
-      }
-      alert('Eski slider verileri başarıyla eklendi!');
-      loadData();
-    } catch (err) {
-      console.error('Slider ekleme hatası:', err);
-      alert('Slider eklenirken hata oluştu!');
-    }
-  };
+
 
   // === PROJE İŞLEMLERİ ===
   const handleCreateProject = async (e: React.FormEvent) => {
@@ -575,7 +536,7 @@ const handleDeleteContent = async (id: number) => {
       setFeatureInput('');
       loadData();
     } catch (err) {
-      console.error('Proje ekleme hatası:', err);
+      // Proje ekleme hatası sessizce geçirildi
     }
   };
 
@@ -587,7 +548,7 @@ const handleDeleteContent = async (id: number) => {
       setEditingProject(null);
       loadData();
     } catch (err) {
-      console.error('Proje güncelleme hatası:', err);
+      // Proje güncelleme hatası sessizce geçirildi
     }
   };
 
@@ -597,7 +558,7 @@ const handleDeleteContent = async (id: number) => {
         await projectService.delete(id);
         loadData();
       } catch (err) {
-        console.error('Proje silme hatası:', err);
+        // Proje silme hatası sessizce geçirildi
       }
     }
   };
@@ -606,8 +567,22 @@ const handleDeleteContent = async (id: number) => {
   const handleCreateSlider = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      await sliderService.create(newSlider as Slider);
-      setNewSlider({ title: '', image: '', link: '', order_index: 0, status: 'devam' });
+      // Link'ten proje ID'sini çıkar ve project_id olarak set et
+      let projectId: number | undefined = undefined;
+      if (newSlider.link) {
+        const match = newSlider.link.match(/\/proje\/(\d+)/);
+        if (match) {
+          projectId = parseInt(match[1]);
+        }
+      }
+
+      const sliderData = {
+        ...newSlider,
+        project_id: projectId
+      };
+
+      await sliderService.create(sliderData as Slider);
+      setNewSlider({ title: '', image: '', link: '', order_index: 0, status: 'devam', project_id: undefined });
       setSliderAddMode('manual');
       setSelectedProjectForSlider(null);
       loadData();
@@ -634,12 +609,13 @@ const handleDeleteContent = async (id: number) => {
         image: selectedImageForSlider,
         link: `/proje/${selectedProjectForSlider.id}`,
         order_index: newSlider.order_index || 0,
-        status: selectedProjectForSlider.status || 'devam'
+        status: selectedProjectForSlider.status || 'devam',
+        project_id: selectedProjectForSlider.id
       };
 
       await sliderService.create(projectSlider as Slider);
       
-      setNewSlider({ title: '', image: '', link: '', order_index: 0, status: 'devam' });
+      setNewSlider({ title: '', image: '', link: '', order_index: 0, status: 'devam', project_id: undefined });
       setSliderAddMode('manual');
       setSelectedProjectForSlider(null);
       setSelectedImageForSlider('');
@@ -653,11 +629,13 @@ const handleDeleteContent = async (id: number) => {
     e.preventDefault();
     if (!editingSlider?.id) return;
     try {
-      await sliderService.update(editingSlider.id, editingSlider);
+      const result = await sliderService.update(editingSlider.id, editingSlider);
+      
       setEditingSlider(null);
       loadData();
+      alert('Slider başarıyla güncellendi!');
     } catch (err) {
-      console.error('Slider güncelleme hatası:', err);
+      alert('Slider güncellenirken hata oluştu!');
     }
   };
 
@@ -677,12 +655,169 @@ const handleDeleteContent = async (id: number) => {
     setEditingSlider(slider);
   };
 
+  // Slider proje ID'sini düzeltme fonksiyonu:
+  const handleFixSliderProjectId = async (slider: Slider) => {
+    if (!slider.link) {
+      alert('Bu slider\'ın link\'i yok!');
+      return;
+    }
+
+    // Link'ten proje ID'sini çıkar
+    const match = slider.link.match(/\/proje\/(\d+)/);
+    if (!match) {
+      alert('Bu slider\'ın link\'inde proje ID\'si bulunamadı!');
+      return;
+    }
+
+    const projectId = parseInt(match[1]);
+    
+    // Proje ID'sinin geçerli olup olmadığını kontrol et
+    const project = projects.find(p => p.id === projectId);
+    if (!project) {
+      alert(`Proje ID ${projectId} bulunamadı!`);
+      return;
+    }
+
+    try {
+      // Sadece project_id alanını güncelle
+      await sliderService.update(slider.id!, {
+        project_id: projectId
+      });
+      
+      alert(`Slider'ın proje ID'si ${projectId} olarak güncellendi!`);
+      loadData(); // Verileri yenile
+    } catch (err) {
+      alert('Slider güncellenirken hata oluştu!');
+    }
+  };
+
+  // Tüm slider'ların proje ID'lerini otomatik düzeltme fonksiyonu:
+  const handleFixAllSliderProjectIds = async () => {
+    if (!window.confirm('Tüm slider\'ların proje ID\'lerini otomatik olarak düzeltmek istediğinizden emin misiniz?')) {
+      return;
+    }
+
+    let fixedCount = 0;
+    let errorCount = 0;
+
+    for (const slider of sliders) {
+      if (!slider.link) continue;
+
+      // Link'ten proje ID'sini çıkar
+      const match = slider.link.match(/\/proje\/(\d+)/);
+      if (!match) continue;
+
+      const projectId = parseInt(match[1]);
+      
+      // Proje ID'sinin geçerli olup olmadığını kontrol et
+      const project = projects.find(p => p.id === projectId);
+      if (!project) continue;
+
+      try {
+        // Sadece project_id alanını güncelle, diğer alanları değiştirme
+        const updateData = {
+          project_id: projectId
+        };
+        
+        const result = await sliderService.update(slider.id!, updateData);
+        
+        fixedCount++;
+      } catch (err) {
+        errorCount++;
+      }
+    }
+
+    alert(`${fixedCount} slider düzeltildi. ${errorCount} slider\'da hata oluştu.`);
+    loadData(); // Verileri yenile
+  };
+
+
+
+  // Slider'ların link'lerini proje ID'lerine göre otomatik düzeltme fonksiyonu:
+  const handleFixSliderLinks = async () => {
+    if (!window.confirm('Slider\'ların link\'lerini proje ID\'lerine göre otomatik düzeltmek istediğinizden emin misiniz?')) {
+      return;
+    }
+
+    let fixedCount = 0;
+    let errorCount = 0;
+
+    for (const slider of sliders) {
+      if (!slider.project_id) continue;
+
+      // Proje ID'sine göre doğru link oluştur
+      const correctLink = `/proje/${slider.project_id}`;
+      
+      // Eğer link zaten doğruysa atla
+      if (slider.link === correctLink) continue;
+
+      try {
+        // Sadece link alanını güncelle
+        await sliderService.update(slider.id!, {
+          link: correctLink
+        });
+        fixedCount++;
+
+      } catch (err) {
+        errorCount++;
+      }
+    }
+
+    alert(`${fixedCount} slider link'i düzeltildi. ${errorCount} slider'da hata oluştu.`);
+    loadData(); // Verileri yenile
+  };
+
+  // Mevcut slider'ları manuel olarak güncelleme fonksiyonu:
+  const handleAddProjectIdColumn = async () => {
+    if (!window.confirm('Mevcut slider\'ların project_id alanlarını link\'lerden çıkararak güncellemek istediğinizden emin misiniz?')) {
+      return;
+    }
+
+    let updatedCount = 0;
+    let errorCount = 0;
+
+    for (const slider of sliders) {
+      if (!slider.link) continue;
+
+      // Link'ten proje ID'sini çıkar
+      const match = slider.link.match(/\/proje\/(\d+)/);
+      if (!match) continue;
+
+      const projectId = parseInt(match[1]);
+      
+      // Proje ID'sinin geçerli olup olmadığını kontrol et
+      const project = projects.find(p => p.id === projectId);
+      if (!project) {
+        console.warn(`⚠️ Proje ID ${projectId} bulunamadı, slider ${slider.id} atlanıyor`);
+        continue;
+      }
+
+      try {
+        // Sadece project_id alanını güncelle
+        await sliderService.update(slider.id!, {
+          project_id: projectId
+        });
+        
+
+        updatedCount++;
+      } catch (err) {
+        console.error(`❌ Slider ${slider.id} güncelleme hatası:`, err);
+        errorCount++;
+      }
+    }
+
+    alert(`${updatedCount} slider güncellendi. ${errorCount} slider'da hata oluştu.`);
+    loadData(); // Verileri yenile
+  };
+
+
+
   // === İÇERİK İŞLEMLERİ ===
   const handleUpdateContent = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!editingContent?.id) return;
     try {
-      console.log('Güncellenecek içerik:', editingContent);
+      
       await siteContentService.update(editingContent.id, {
         page_name: editingContent.page_name,
         section_name: editingContent.section_name,
@@ -702,7 +837,7 @@ const handleDeleteContent = async (id: number) => {
   };
 
   const handleEditContent = (content: SiteContent) => {
-    console.log('Düzenlenecek içerik (ham):', content);
+    
     const processedContent = { 
       id: content.id,
       page_name: content.page_name,
@@ -712,7 +847,7 @@ const handleDeleteContent = async (id: number) => {
       order_index: content.order_index,
       images: content.images
     };
-    console.log('Düzenlenecek içerik (işlenmiş):', processedContent);
+    
     setEditingContent(processedContent);
     setShowContentModal(true);
   };
@@ -746,24 +881,24 @@ const handleDeleteContent = async (id: number) => {
     e.preventDefault();
     try {
       // Site ayarlarını kaydet
-      await supabase
-        .from('site_settings')
-        .upsert({
-          id: 1, // Tek bir ayar kaydı
-          site_title: settings.siteTitle,
-          site_description: settings.siteDescription,
-          contact_email: settings.contactEmail,
-          phone_number: settings.phoneNumber,
-          address: settings.address,
-          facebook_url: settings.facebookUrl,
-          instagram_url: settings.instagramUrl,
-          youtube_url: settings.youtubeUrl,
-          office_video_url: settings.officeVideoUrl,
-          maintenance_mode: settings.maintenanceMode,
-          email_notifications: settings.emailNotifications,
-          auto_backup: settings.autoBackup,
-          updated_at: new Date().toISOString()
-        });
+      await siteSettingsService.updateSettings({
+        site_title: settings.siteTitle,
+        site_description: settings.siteDescription,
+        contact_email: settings.contactEmail,
+        phone_number: settings.phoneNumber,
+        address: settings.address,
+        facebook_url: settings.facebookUrl,
+        instagram_url: settings.instagramUrl,
+        youtube_url: settings.youtubeUrl,
+        maintenance_mode: settings.maintenanceMode,
+        email_notifications: settings.emailNotifications,
+        auto_backup: settings.autoBackup,
+        updated_at: new Date().toISOString()
+      });
+
+      // State'i güncelle
+      const updatedSettings = await siteSettingsService.getSettings();
+      setSiteSettings(updatedSettings);
 
     setSettingsSaved(true);
       setTimeout(() => setSettingsSaved(false), 3000);
@@ -872,6 +1007,7 @@ const handleDeleteContent = async (id: number) => {
     async function fetchVisits() {
       const today = await visitService.getTodayVisits();
       setTodayVisits(today);
+      
       // Son 7 gün
       const now = new Date();
       const end = now.toISOString().slice(0, 10);
@@ -879,12 +1015,25 @@ const handleDeleteContent = async (id: number) => {
       const start = startDate.toISOString().slice(0, 10);
       const week = await visitService.getVisitsByRange(start, end);
       setWeeklyVisits(week);
+      
       // Haftalık toplam
       setWeeklyTotal(week.reduce((sum, v) => sum + (v.count || 0), 0));
+      
+      // Bu ay ziyaret sayısı
+      const currentMonth = now.getMonth();
+      const currentYear = now.getFullYear();
+      const monthStart = new Date(currentYear, currentMonth, 1).toISOString().slice(0, 10);
+      const monthEnd = new Date(currentYear, currentMonth + 1, 0).toISOString().slice(0, 10);
+      const monthVisits = await visitService.getVisitsByRange(monthStart, monthEnd);
+      const monthlyTotal = monthVisits.reduce((sum, v) => sum + (v.count || 0), 0);
+      setMonthlyVisits(monthlyTotal);
+      
       // En çok ziyaret edilen gün
       setMostVisited(week.reduce((max, v) => (v.count > (max?.count || 0) ? v : max), null as Visit | null));
+      
       // Ortalama
       setVisitAvg(week.length ? Math.round(week.reduce((sum, v) => sum + (v.count || 0), 0) / week.length) : 0);
+      
       // Son ziyaret zamanı (en son gün)
       setLastVisit(week.length ? week[week.length - 1].date : '');
     }
@@ -902,6 +1051,7 @@ const handleDeleteContent = async (id: number) => {
       setWeeklyVisits([]);
       setTodayVisits(0);
       setWeeklyTotal(0);
+      setMonthlyVisits(0);
       setMostVisited(null);
       setVisitAvg(0);
       setLastVisit('');
@@ -1055,6 +1205,21 @@ const handleDeleteContent = async (id: number) => {
       setWhatsappLoading(false);
     }
   };
+
+  // === LOADING DURUMU ===
+  if (authLoading) {
+    return (
+      <Box sx={{ 
+        minHeight: '100vh', 
+        display: 'flex', 
+        alignItems: 'center', 
+        justifyContent: 'center', 
+        background: 'linear-gradient(135deg, #1e3c72 0%, #2a5298 50%, #667eea 100%)'
+      }}>
+        <CircularProgress size={60} sx={{ color: '#fff' }} />
+      </Box>
+    );
+  }
 
   // === MODERN LOGIN SAYFASI ===
   if (page === 'login') {
@@ -1256,6 +1421,11 @@ const handleDeleteContent = async (id: number) => {
   }
 
   // === DASHBOARD ===
+  // Kullanıcı giriş yapmamışsa login sayfasına yönlendir
+  if (!authUser) {
+    return null; // useEffect ile yönlendirme yapılacak
+  }
+
   return (
     <Box sx={{ display: 'flex', height: '100vh', background: darkMode ? '#181c24' : MODERN_COLORS.bg, transition: 'background 0.3s', m: 0, p: 0, top: 0 }}>
       <style>
@@ -1391,7 +1561,7 @@ const handleDeleteContent = async (id: number) => {
               <Grid container spacing={2} mb={2}>
                 <Grid item xs={12} sm={6} md={3}><Paper sx={{ p: 3, borderRadius: 3, textAlign: 'center' }}><Typography fontWeight={700} fontSize={22}>{projects.length}</Typography><Typography color="text.secondary">Toplam Projeler</Typography></Paper></Grid>
                 <Grid item xs={12} sm={6} md={3}><Paper sx={{ p: 3, borderRadius: 3, textAlign: 'center' }}><Typography fontWeight={700} fontSize={22}>{projects.filter(p => p.status === 'devam').length}</Typography><Typography color="text.secondary">Aktif Projeler</Typography></Paper></Grid>
-                <Grid item xs={12} sm={6} md={3}><Paper sx={{ p: 3, borderRadius: 3, textAlign: 'center' }}><Typography fontWeight={700} fontSize={22}>12.5K</Typography><Typography color="text.secondary">Bu Ay Ziyaret</Typography></Paper></Grid>
+                <Grid item xs={12} sm={6} md={3}><Paper sx={{ p: 3, borderRadius: 3, textAlign: 'center' }}><Typography fontWeight={700} fontSize={22}>{monthlyVisits.toLocaleString()}</Typography><Typography color="text.secondary">Bu Ay Ziyaret</Typography></Paper></Grid>
                 <Grid item xs={12} sm={6} md={3}><Paper sx={{ p: 3, borderRadius: 3, textAlign: 'center' }}><Typography fontWeight={700} fontSize={22}>{whatsappStats?.total_clicks || 0}</Typography><Typography color="text.secondary">WhatsApp Talepleri</Typography></Paper></Grid>
               </Grid>
               {/* Hızlı işlemler */}
@@ -1494,12 +1664,26 @@ const handleDeleteContent = async (id: number) => {
                   {/* Manuel Ekleme Formu */}
                   {sliderAddMode === 'manual' && (
                   <Box component="form" onSubmit={handleCreateSlider} sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' }, gap: 2 }}>
-                    <TextField
-                      label="Başlık"
-                      value={newSlider.title}
-                      onChange={e => setNewSlider({ ...newSlider, title: e.target.value })}
-                      fullWidth
-                    />
+                    <Box sx={{ gridColumn: { xs: '1', md: '1 / span 2' } }}>
+                      <Typography variant="subtitle1" fontWeight={600} mb={1}>
+                        Başlık
+                      </Typography>
+                      <ReactQuill
+                        theme="snow"
+                        value={newSlider.title || ''}
+                        onChange={(value) => {
+                          if (value !== newSlider.title) {
+                            setNewSlider(prev => prev ? { ...prev, title: value } : prev);
+                          }
+                        }}
+                        modules={QUILL_MODULES}
+                        formats={QUILL_FORMATS}
+                        style={{ 
+                          height: '100px',
+                          marginBottom: '20px'
+                        }}
+                      />
+                    </Box>
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                       <TextField
                         label="Görsel URL"
@@ -1552,6 +1736,21 @@ const handleDeleteContent = async (id: number) => {
                         <MenuItem value="baslayan">Yakında Başlıyor</MenuItem>
                         <MenuItem value="devam">Devam Eden Proje</MenuItem>
                         <MenuItem value="bitmis">Tamamlanan Proje</MenuItem>
+                      </Select>
+                    </FormControl>
+                    <FormControl fullWidth>
+                      <InputLabel>Proje Seçimi (Opsiyonel)</InputLabel>
+                      <Select
+                        value={newSlider.project_id || ''}
+                        onChange={e => setNewSlider({ ...newSlider, project_id: e.target.value ? Number(e.target.value) : undefined })}
+                        label="Proje Seçimi"
+                      >
+                        <MenuItem value="">Proje Seçilmedi</MenuItem>
+                        {projects.map(project => (
+                          <MenuItem key={project.id} value={project.id}>
+                            {project.title} ({project.status === 'baslayan' ? 'Yakında Başlıyor' : project.status === 'devam' ? 'Devam Eden' : 'Tamamlanan'})
+                          </MenuItem>
+                        ))}
                       </Select>
                     </FormControl>
                     <Box sx={{ gridColumn: { xs: '1', md: '1 / span 2' }, mt: 2 }}>
@@ -1689,6 +1888,37 @@ const handleDeleteContent = async (id: number) => {
                 </CardContent>
               </Card>
               {/* Slider listesi */}
+              <Box sx={{ mb: 2, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <Typography variant="h6" fontWeight={600}>Slider Listesi</Typography>
+                <Box sx={{ display: 'flex', gap: 1 }}>
+
+                  <Button
+                    variant="outlined"
+                    color="error"
+                    onClick={handleAddProjectIdColumn}
+                    startIcon={<DatabaseIcon />}
+                  >
+                    Project ID'leri Güncelle
+                  </Button>
+
+                  <Button
+                    variant="outlined"
+                    color="secondary"
+                    onClick={handleFixSliderLinks}
+                    startIcon={<LinkIcon />}
+                  >
+                    Link'leri Düzelt
+                  </Button>
+                  <Button
+                    variant="outlined"
+                    color="warning"
+                    onClick={handleFixAllSliderProjectIds}
+                    startIcon={<AssignmentIcon />}
+                  >
+                    Tüm Proje ID'lerini Düzelt
+                  </Button>
+                </Box>
+              </Box>
               <Paper>
                 <TableContainer>
                   <Table>
@@ -1697,6 +1927,7 @@ const handleDeleteContent = async (id: number) => {
                         <TableCell>Başlık</TableCell>
                         <TableCell>Görsel</TableCell>
                         <TableCell>Link</TableCell>
+                        <TableCell>Proje ID</TableCell>
                         <TableCell>Sıra</TableCell>
                         <TableCell>Durum</TableCell>
                         <TableCell align="right">İşlemler</TableCell>
@@ -1708,6 +1939,7 @@ const handleDeleteContent = async (id: number) => {
                           <TableCell>{slider.title}</TableCell>
                           <TableCell>{slider.image && <img src={slider.image} alt="slider" style={{ width: 60, height: 40, objectFit: 'cover', borderRadius: 4 }} />}</TableCell>
                           <TableCell>{slider.link}</TableCell>
+                          <TableCell>{slider.project_id || 'Yok'}</TableCell>
                           <TableCell>{slider.order_index}</TableCell>
                           <TableCell>
                             {slider.status === 'baslayan' && 'Yakında Başlıyor'}
@@ -1716,6 +1948,7 @@ const handleDeleteContent = async (id: number) => {
                           </TableCell>
                           <TableCell align="right">
                             <IconButton color="primary" onClick={() => handleSliderEdit(slider)}><EditIcon /></IconButton>
+                            <IconButton color="warning" onClick={() => handleFixSliderProjectId(slider)} title="Proje ID'sini Düzelt"><AssignmentIcon /></IconButton>
                             <IconButton color="error" onClick={() => handleDeleteSlider(slider.id!)}><DeleteIcon /></IconButton>
                           </TableCell>
                         </TableRow>
@@ -1730,12 +1963,26 @@ const handleDeleteContent = async (id: number) => {
                 <DialogContent>
                   {editingSlider && (
                     <Box component="form" onSubmit={handleUpdateSlider} sx={{ display: 'grid', gap: 2, mt: 1 }}>
-                      <TextField
-                        label="Başlık"
-                        value={editingSlider.title}
-                        onChange={e => setEditingSlider({ ...editingSlider, title: e.target.value })}
-                        fullWidth
-                      />
+                      <Box>
+                        <Typography variant="subtitle1" fontWeight={600} mb={1}>
+                          Başlık
+                        </Typography>
+                        <ReactQuill
+                          theme="snow"
+                          value={editingSlider.title || ''}
+                          onChange={(value) => {
+                            if (editingSlider && value !== editingSlider.title) {
+                              setEditingSlider(prev => prev ? { ...prev, title: value } : null);
+                            }
+                          }}
+                          modules={QUILL_MODULES}
+                          formats={QUILL_FORMATS}
+                          style={{ 
+                            height: '100px',
+                            marginBottom: '20px'
+                          }}
+                        />
+                      </Box>
                       <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
                         <TextField
                           label="Görsel URL"
@@ -1790,6 +2037,125 @@ const handleDeleteContent = async (id: number) => {
                           <MenuItem value="bitmis">Tamamlanan Proje</MenuItem>
                         </Select>
                       </FormControl>
+                      <FormControl fullWidth>
+                        <InputLabel>Proje Seçimi (Opsiyonel)</InputLabel>
+                        <Select
+                          value={editingSlider.project_id || ''}
+                          onChange={e => setEditingSlider({ ...editingSlider, project_id: e.target.value ? Number(e.target.value) : undefined })}
+                          label="Proje Seçimi"
+                        >
+                          <MenuItem value="">Proje Seçilmedi</MenuItem>
+                          {projects.map(project => (
+                            <MenuItem key={project.id} value={project.id}>
+                              {project.title} ({project.status === 'baslayan' ? 'Yakında Başlıyor' : project.status === 'devam' ? 'Devam Eden' : 'Tamamlanan'})
+                            </MenuItem>
+                          ))}
+                        </Select>
+                      </FormControl>
+                      
+                      {/* Görsel Konumlandırma Ayarları */}
+                      <Box sx={{ mt: 2, p: 2, border: '1px solid #e0e0e0', borderRadius: 2, backgroundColor: '#f9f9f9' }}>
+                        <Typography variant="subtitle2" fontWeight={600} mb={2} sx={{ color: MODERN_COLORS.primary }}>
+                          📐 Görsel Konumlandırma Ayarları
+                        </Typography>
+                        
+                        <Grid container spacing={2}>
+                          <Grid item xs={12} md={4}>
+                            <FormControl fullWidth size="small">
+                              <InputLabel>Görsel Boyutlandırma</InputLabel>
+                              <Select
+                                value={editingSlider.image_fit || 'cover'}
+                                onChange={e => setEditingSlider({ ...editingSlider, image_fit: e.target.value as any })}
+                                label="Görsel Boyutlandırma"
+                              >
+                                <MenuItem value="cover">📏 Cover (Tam Kapla)</MenuItem>
+                                <MenuItem value="contain">🖼️ Contain (Tam Görünür)</MenuItem>
+                                <MenuItem value="fill">↔️ Fill (Uzat)</MenuItem>
+                                <MenuItem value="scale-down">🔽 Scale-down (Küçült)</MenuItem>
+                              </Select>
+                            </FormControl>
+                          </Grid>
+                          
+                          <Grid item xs={12} md={4}>
+                            <FormControl fullWidth size="small">
+                              <InputLabel>Görsel Konumu</InputLabel>
+                              <Select
+                                value={editingSlider.image_position || 'center'}
+                                onChange={e => setEditingSlider({ ...editingSlider, image_position: e.target.value as any })}
+                                label="Görsel Konumu"
+                              >
+                                <MenuItem value="center">🎯 Merkez</MenuItem>
+                                <MenuItem value="top">⬆️ Üst</MenuItem>
+                                <MenuItem value="bottom">⬇️ Alt</MenuItem>
+                                <MenuItem value="left">⬅️ Sol</MenuItem>
+                                <MenuItem value="right">➡️ Sağ</MenuItem>
+                                <MenuItem value="top left">↖️ Sol Üst</MenuItem>
+                                <MenuItem value="top right">↗️ Sağ Üst</MenuItem>
+                                <MenuItem value="bottom left">↙️ Sol Alt</MenuItem>
+                                <MenuItem value="bottom right">↘️ Sağ Alt</MenuItem>
+                              </Select>
+                            </FormControl>
+                          </Grid>
+                          
+                          <Grid item xs={12} md={4}>
+                            <TextField
+                              label="Arka Plan Rengi"
+                              value={editingSlider.background_color || '#f8f9fa'}
+                              onChange={e => setEditingSlider({ ...editingSlider, background_color: e.target.value })}
+                              size="small"
+                              fullWidth
+                              placeholder="#f8f9fa"
+                              InputProps={{
+                                startAdornment: (
+                                  <Box 
+                                    sx={{ 
+                                      width: 20, 
+                                      height: 20, 
+                                      backgroundColor: editingSlider.background_color || '#f8f9fa',
+                                      border: '1px solid #ccc',
+                                      borderRadius: 1,
+                                      mr: 1
+                                    }} 
+                                  />
+                                )
+                              }}
+                            />
+                          </Grid>
+                        </Grid>
+                        
+                        {/* Önizleme */}
+                        {editingSlider.image && (
+                          <Box sx={{ mt: 2 }}>
+                            <Typography variant="caption" sx={{ color: '#666', mb: 1, display: 'block' }}>
+                              🔍 Önizleme (Küçük boyut):
+                            </Typography>
+                            <Box 
+                              sx={{ 
+                                width: '100%', 
+                                height: 120, 
+                                border: '1px solid #ddd', 
+                                borderRadius: 1,
+                                backgroundColor: editingSlider.background_color || '#f8f9fa',
+                                overflow: 'hidden',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center'
+                              }}
+                            >
+                              <img 
+                                src={editingSlider.image} 
+                                alt="Önizleme" 
+                                style={{
+                                  width: '100%',
+                                  height: '100%',
+                                  objectFit: editingSlider.image_fit || 'cover',
+                                  objectPosition: editingSlider.image_position || 'center'
+                                }}
+                              />
+                            </Box>
+                          </Box>
+                        )}
+                      </Box>
                       <DialogActions>
                         <Button onClick={handleSliderModalClose} color="secondary">İptal</Button>
                         <Button type="submit" variant="contained" color="primary">Kaydet</Button>
@@ -1893,15 +2259,7 @@ const handleDeleteContent = async (id: number) => {
                 ))}
               </Grid>
               {/* Proje ekleme/düzenleme modalı */}
-              <Dialog 
-                open={!!editingProject && !editingProject.id} 
-                onClose={() => setEditingProject(null)} 
-                maxWidth="md" 
-                fullWidth
-                aria-modal="true"
-                disableEnforceFocus
-                disableAutoFocus
-              >
+              <Dialog open={!!editingProject && !editingProject.id} onClose={() => setEditingProject(null)} maxWidth="md" fullWidth>
                 <DialogTitle>Yeni Proje Ekle</DialogTitle>
                 <DialogContent>
                   {editingProject && !editingProject.id && (
@@ -1932,6 +2290,14 @@ const handleDeleteContent = async (id: number) => {
                         </Grid>
                         <Grid item xs={12} md={6}>
                           <TextField
+                            label="Kategori (isteğe bağlı)"
+                            value={editingProject.technical_info?.category || ''}
+                            onChange={e => setEditingProject({ ...editingProject, technical_info: { ...editingProject.technical_info, category: e.target.value } })}
+                            fullWidth
+                          />
+                        </Grid>
+                        <Grid item xs={12} md={6}>
+                          <TextField
                             label="Tarih (isteğe bağlı)"
                             type="date"
                             value={editingProject.technical_info?.date || ''}
@@ -1949,22 +2315,26 @@ const handleDeleteContent = async (id: number) => {
                           />
                         </Grid>
                         <Grid item xs={12}>
-                          <TextField
-                            label="Proje Açıklaması"
-                            value={editingProject.description}
-                            onChange={e => setEditingProject({ ...editingProject, description: e.target.value })}
-                            multiline
-                            minRows={3}
-                            fullWidth
-                          />
-                        </Grid>
-                        <Grid item xs={12} md={6}>
-                          <TextField
-                            label="Video Linki (YouTube veya mp4)"
-                            value={editingProject.video || ''}
-                            onChange={e => setEditingProject({ ...editingProject, video: e.target.value })}
-                            fullWidth
-                          />
+                          <Box>
+                            <Typography variant="subtitle1" fontWeight={600} mb={1}>
+                              Proje Açıklaması
+                            </Typography>
+                            <ReactQuill
+                              theme="snow"
+                              value={editingProject.description || ''}
+                              onChange={(value) => {
+                                if (editingProject && value !== editingProject.description) {
+                                  setEditingProject(prev => prev ? { ...prev, description: value } : null);
+                                }
+                              }}
+                              modules={QUILL_MODULES}
+                              formats={QUILL_FORMATS}
+                              style={{ 
+                                height: '150px',
+                                marginBottom: '20px'
+                              }}
+                            />
+                          </Box>
                         </Grid>
                       </Grid>
                       {/* Görsel yükleme ve önizleme */}
@@ -2074,20 +2444,26 @@ const handleDeleteContent = async (id: number) => {
                           <MenuItem value="bitmis">Bitmiş</MenuItem>
                         </Select>
                       </FormControl>
-                      <TextField
-                        label="Proje Açıklaması"
-                        value={editingProject.description}
-                        onChange={e => setEditingProject({ ...editingProject, description: e.target.value })}
-                        multiline
-                        minRows={3}
-                        fullWidth
-                      />
-                      <TextField
-                        label="Video Linki (YouTube veya mp4)"
-                        value={editingProject.video || ''}
-                        onChange={e => setEditingProject({ ...editingProject, video: e.target.value })}
-                        fullWidth
-                      />
+                      <Box>
+                        <Typography variant="subtitle1" fontWeight={600} mb={1}>
+                          Proje Açıklaması
+                        </Typography>
+                        <ReactQuill
+                          theme="snow"
+                          value={editingProject.description || ''}
+                          onChange={(value) => {
+                            if (editingProject && value !== editingProject.description) {
+                              setEditingProject(prev => prev ? { ...prev, description: value } : null);
+                            }
+                          }}
+                          modules={QUILL_MODULES}
+                          formats={QUILL_FORMATS}
+                          style={{ 
+                            height: '150px',
+                            marginBottom: '20px'
+                          }}
+                        />
+                      </Box>
                       {/* Çoklu görsel alanı */}
                       <Box sx={{ gridColumn: { xs: '1', md: '1 / span 2' } }}>
                         <Typography variant="body2" mb={1}>Görsel URL'leri (virgülle ayır):</Typography>
@@ -2331,91 +2707,7 @@ const handleDeleteContent = async (id: number) => {
                           </Droppable>
                         </DragDropContext>
                       </Box>
-                      {/* Google Maps Konum */}
-                      <Box sx={{ mt: 2 }}>
-                        <Typography variant="body2" mb={1}>Google Maps Konum:</Typography>
-                        <TextField
-                          label="Google Maps Embed URL"
-                          value={editingProject?.technical_info?.map_embed_url || ''}
-                          onChange={e => setEditingProject(editingProject ? { 
-                            ...editingProject, 
-                            technical_info: { 
-                              ...editingProject.technical_info, 
-                              map_embed_url: e.target.value 
-                            } 
-                          } : editingProject)}
-                          placeholder="Google Maps'ten aldığınız iframe kodunu veya URL'yi yapıştırın"
-                          fullWidth
-                          multiline
-                          minRows={3}
-                          helperText="Google Maps'te 'Paylaş' > 'Haritayı yerleştir' > 'HTML' kısmından kodu kopyalayın"
-                        />
-                        {editingProject?.technical_info?.map_embed_url && editingProject.technical_info.map_embed_url.includes('<iframe') && (
-                          <Box sx={{ mt: 2, p: 2, border: '1px solid #ddd', borderRadius: 1 }}>
-                            <Typography variant="body2" mb={1}>Önizleme:</Typography>
-                            <Box 
-                              sx={{ 
-                                position: 'relative',
-                                width: '100%',
-                                height: '300px',
-                                border: '1px solid #ddd',
-                                borderRadius: 1,
-                                overflow: 'hidden'
-                              }}
-                            >
-                              <iframe
-                                src={extractUrlFromIframe(editingProject.technical_info.map_embed_url)}
-                                width="100%"
-                                height="100%"
-                                style={{ 
-                                  border: 0,
-                                  position: 'absolute',
-                                  top: 0,
-                                  left: 0
-                                }}
-                                allowFullScreen
-                                loading="lazy"
-                                referrerPolicy="no-referrer-when-downgrade"
-                                title="Google Maps Preview"
-                                sandbox="allow-scripts allow-same-origin allow-forms"
-                              />
-                            </Box>
-                          </Box>
-                        )}
-                        {editingProject?.technical_info?.map_embed_url && !editingProject.technical_info.map_embed_url.includes('<iframe') && (
-                          <Box sx={{ mt: 2, p: 2, border: '1px solid #ddd', borderRadius: 1 }}>
-                            <Typography variant="body2" mb={1}>Önizleme:</Typography>
-                            <Box 
-                              sx={{ 
-                                position: 'relative',
-                                width: '100%',
-                                height: '300px',
-                                border: '1px solid #ddd',
-                                borderRadius: 1,
-                                overflow: 'hidden'
-                              }}
-                            >
-                              <iframe
-                                src={editingProject.technical_info.map_embed_url}
-                                width="100%"
-                                height="100%"
-                                style={{ 
-                                  border: 0,
-                                  position: 'absolute',
-                                  top: 0,
-                                  left: 0
-                                }}
-                                allowFullScreen
-                                loading="lazy"
-                                referrerPolicy="no-referrer-when-downgrade"
-                                title="Google Maps Preview"
-                                sandbox="allow-scripts allow-same-origin allow-forms"
-                              />
-                            </Box>
-                          </Box>
-                        )}
-                      </Box>
-                      <DialogActions sx={{ mt: 2 }}>
+                      <DialogActions>
                         <Button onClick={() => setEditingProject(null)} color="secondary">İptal</Button>
                         <Button type="submit" variant="contained" color="primary">Kaydet</Button>
                       </DialogActions>
@@ -3024,9 +3316,9 @@ const handleDeleteContent = async (id: number) => {
                                 page_name: 'contact',
                                 section_name: 'contact_info',
                                 title: 'İletişim Bilgileri',
-                                content: `📞 Telefon: 0533 368 1965
-📱 Cep: 0533 368 1965
-📧 E-posta: info@blrinsaat.com
+                                content: `📞 Telefon: 0282 651 20 30
+📱 Cep: 0542 180 59 59
+📧 E-posta: info@blrinsaat.com.tr
 📍 Adres: REŞADİYE MAHALLESİ ATATÜRK BULVARI CADDESİ NO:48/D ÇORLU/TEKİRDAĞ BİLİR İNŞAAT`,
                                 images: [],
                                 order_index: 2
@@ -3103,7 +3395,7 @@ const handleDeleteContent = async (id: number) => {
                             startIcon={<VisibilityIcon />}
                             onClick={() => {
                               const contactContents = siteContents.filter(c => c.page_name === 'contact');
-                              console.log('Mevcut İletişim İçerikleri:', contactContents);
+                      
                               alert(`Mevcut ${contactContents.length} iletişim içeriği bulundu. Console'da detayları görebilirsiniz.`);
                             }}
                             sx={{ mt: 1 }}
@@ -3163,10 +3455,7 @@ const handleDeleteContent = async (id: number) => {
                     <Box component="form" onSubmit={async (e) => {
                       e.preventDefault();
                       try {
-                        console.log('Modal submit - editingContent:', editingContent);
-                        console.log('Güncellenecek ID:', editingContent.id);
-                        console.log('Güncellenecek başlık:', editingContent.title);
-                        console.log('Güncellenecek içerik:', editingContent.content);
+                        
                         
                         if (editingContent.id && editingContent.id > 0) {
                           const updateData = {
@@ -3177,10 +3466,7 @@ const handleDeleteContent = async (id: number) => {
                             order_index: editingContent.order_index,
                             images: editingContent.images
                           };
-                          console.log('Gönderilecek update data:', updateData);
-                          
-                          const result = await siteContentService.update(editingContent.id, updateData);
-                          console.log('Update sonucu:', result);
+                                  const result = await siteContentService.update(editingContent.id, updateData);
                         } else {
                           await siteContentService.create(editingContent);
                         }
@@ -3237,9 +3523,13 @@ const handleDeleteContent = async (id: number) => {
                           {editingContent.page_name === 'about' && (
                             <>
                               <MenuItem value="hero">Hero (Sayfa Başlığı)</MenuItem>
-                              <MenuItem value="about_section">Hakkımızda Bölümü</MenuItem>
-                              <MenuItem value="team">Ekip</MenuItem>
+                              <MenuItem value="company_info">Şirket Bilgileri</MenuItem>
+                              <MenuItem value="mission">Misyonumuz</MenuItem>
+                              <MenuItem value="vision">Vizyonumuz</MenuItem>
                               <MenuItem value="values">Değerlerimiz</MenuItem>
+                              <MenuItem value="main_image">Ana Görsel</MenuItem>
+                              <MenuItem value="office">Ofisimiz</MenuItem>
+                              <MenuItem value="office_location">Ofis Konumu</MenuItem>
                               <MenuItem value="coordinator">Bölge Koordinatörü</MenuItem>
                             </>
                           )}
@@ -3278,25 +3568,51 @@ const handleDeleteContent = async (id: number) => {
                       </FormControl>
 
                       {/* Başlık */}
-                        <TextField
-                        label="Başlık" 
-                        value={editingContent.title || ''} 
-                        onChange={e => setEditingContent({ ...editingContent, title: e.target.value })} 
-                          fullWidth
-                        required
-                      />
+                      <Box>
+                        <Typography variant="subtitle1" fontWeight={600} mb={1}>
+                          Başlık
+                        </Typography>
+                        <ReactQuill
+                          theme="snow"
+                          value={editingContent.title || ''}
+                          onChange={(value) => {
+                            if (editingContent && value !== editingContent.title) {
+                              setEditingContent(prev => prev ? { ...prev, title: value } : null);
+                            }
+                          }}
+                          modules={QUILL_MODULES}
+                          formats={QUILL_FORMATS}
+                          style={{ 
+                            height: '120px',
+                            marginBottom: '20px'
+                          }}
+                        />
+                      </Box>
 
                       {/* İçerik */}
-                      <TextField 
-                        label="İçerik" 
-                        value={editingContent.content || ''} 
-                        onChange={e => setEditingContent({ ...editingContent, content: e.target.value })} 
-                        fullWidth 
-                        multiline 
-                        minRows={4}
-                        maxRows={8}
-                        helperText="HTML etiketleri kullanabilirsiniz"
-                      />
+                      <Box>
+                        <Typography variant="subtitle1" fontWeight={600} mb={1}>
+                          İçerik
+                        </Typography>
+                        <ReactQuill
+                          theme="snow"
+                          value={editingContent.content || ''}
+                          onChange={(value) => {
+                            if (editingContent && value !== editingContent.content) {
+                              setEditingContent(prev => prev ? { ...prev, content: value } : null);
+                            }
+                          }}
+                          modules={QUILL_MODULES}
+                          formats={QUILL_FORMATS}
+                          style={{ 
+                            height: '200px',
+                            marginBottom: '20px'
+                          }}
+                        />
+                        <Typography variant="caption" color="text.secondary">
+                          Kalın, italik, madde işaretleri, hizalama ve daha fazla özellik kullanabilirsiniz
+                        </Typography>
+                      </Box>
 
                       {/* Sıralama */}
                       <TextField 
@@ -3314,6 +3630,145 @@ const handleDeleteContent = async (id: number) => {
                           Görsel Yönetimi
                         </Typography>
                         
+                                 {/* Görsel Listesi - Drag & Drop ile Sıralama */}
+         {Array.isArray(editingContent.images) && editingContent.images.length > 0 && (
+           <Box sx={{ 
+             mb: 3,
+             height: '120px', // Sabit yükseklik
+             overflow: 'hidden' // Taşan içeriği gizle
+           }}>
+                            <Typography variant="subtitle1" fontWeight={600} mb={2}>
+                              Görsel Sıralaması (Kaydırarak değiştirin)
+                            </Typography>
+                                                         <DragDropContext onDragEnd={(result) => {
+                               if (!result.destination) return;
+                               
+                               // Sadece yatay kaydırmaya izin ver
+                               const sourceIndex = result.source.index;
+                               const destIndex = result.destination.index;
+                               
+                               // Aynı pozisyona bırakılırsa işlem yapma
+                               if (sourceIndex === destIndex) return;
+                               
+                               const newImages = moveArrayItem(
+                                 editingContent.images || [],
+                                 sourceIndex,
+                                 destIndex
+                               );
+                               
+                               setEditingContent({
+                                 ...editingContent,
+                                 images: newImages
+                               });
+                             }}>
+                                                             <Droppable droppableId="content-images" direction="horizontal">
+                                 {(provided) => (
+                                                                     <Box
+                                     {...provided.droppableProps}
+                                     ref={provided.innerRef}
+                                     sx={{ 
+                                       display: 'flex', 
+                                       flexWrap: 'nowrap', // Wrap'i kapat
+                                       gap: 2,
+                                       mb: 2,
+                                       maxWidth: '100%',
+                                       overflowX: 'auto', // Yatay scroll
+                                       overflowY: 'hidden' // Dikey scroll'u kapat
+                                     }}
+                                   >
+                                    {(editingContent.images || []).map((image, index) => (
+                                      <Draggable key={index} draggableId={`image-${index}`} index={index}>
+                                        {(provided, snapshot) => (
+                                          <Box
+                                            ref={provided.innerRef}
+                                            {...provided.draggableProps}
+                                            {...provided.dragHandleProps}
+                                                                                         sx={{
+                                               position: 'relative',
+                                               border: '2px solid #e0e0e0',
+                                               borderRadius: 2,
+                                               overflow: 'hidden',
+                                               cursor: 'grab',
+                                               transform: snapshot.isDragging ? 'scale(1.05)' : 'none', // Sadece scale efekti
+                                               transition: 'all 0.2s ease',
+                                               width: '150px',
+                                               height: '100px',
+                                               flexShrink: 0,
+                                               flexGrow: 0,
+                                               alignSelf: 'flex-start', // Üst hizaya sabitle
+                                               '&:hover': {
+                                                 borderColor: MODERN_COLORS.primary,
+                                                 boxShadow: '0 4px 12px rgba(0,0,0,0.15)'
+                                               }
+                                             }}
+                                          >
+                                            <img
+                                              src={image}
+                                              alt={`Görsel ${index + 1}`}
+                                              style={{
+                                                width: '100%',
+                                                height: '100px',
+                                                objectFit: 'cover',
+                                                display: 'block'
+                                              }}
+                                              onError={(e) => {
+                                                const target = e.target as HTMLImageElement;
+                                                target.src = 'https://via.placeholder.com/150x100?text=Görsel+Yüklenemedi';
+                                              }}
+                                            />
+                                            <Box
+                                              sx={{
+                                                position: 'absolute',
+                                                top: 5,
+                                                right: 5,
+                                                background: 'rgba(0,0,0,0.7)',
+                                                color: 'white',
+                                                borderRadius: '50%',
+                                                width: 24,
+                                                height: 24,
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                                justifyContent: 'center',
+                                                fontSize: '12px',
+                                                fontWeight: 'bold'
+                                              }}
+                                            >
+                                              {index + 1}
+                                            </Box>
+                                            <IconButton
+                                              size="small"
+                                              sx={{
+                                                position: 'absolute',
+                                                top: 5,
+                                                left: 5,
+                                                background: 'rgba(255,0,0,0.8)',
+                                                color: 'white',
+                                                '&:hover': {
+                                                  background: 'rgba(255,0,0,1)'
+                                                }
+                                              }}
+                                              onClick={() => {
+                                                const newImages = editingContent.images?.filter((_, i) => i !== index) || [];
+                                                setEditingContent({
+                                                  ...editingContent,
+                                                  images: newImages
+                                                });
+                                              }}
+                                            >
+                                              <DeleteIcon fontSize="small" />
+                                            </IconButton>
+                                          </Box>
+                                        )}
+                                      </Draggable>
+                                    ))}
+                                    {provided.placeholder}
+                                  </Box>
+                                )}
+                              </Droppable>
+                            </DragDropContext>
+                          </Box>
+                        )}
+
                         {/* URL ile Görsel Ekleme */}
                         <TextField
                           label="Görsel URL'leri (virgülle ayırın)"

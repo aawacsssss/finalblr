@@ -3,6 +3,23 @@ import { useParams } from "react-router-dom";
 import { projectService, Project } from "../services/supabaseService";
 import ReactMarkdown from 'react-markdown';
 
+// HTML içeriğini güvenli şekilde render eden yardımcı fonksiyon
+const renderHTML = (htmlContent: string) => {
+  return <div dangerouslySetInnerHTML={{ __html: htmlContent }} />;
+};
+
+// Metni kelime sayısına göre kısaltan fonksiyon
+const truncateText = (text: string, wordLimit: number = 40) => {
+  const words = text.split(' ');
+  if (words.length <= wordLimit) {
+    return { text: text, isTruncated: false };
+  }
+  return { 
+    text: words.slice(0, wordLimit).join(' ') + '...', 
+    isTruncated: true 
+  };
+};
+
 export default function ProjectDetail() {
   const { id } = useParams();
   const [project, setProject] = useState<Project | null>(null);
@@ -10,6 +27,7 @@ export default function ProjectDetail() {
   const [activeIndex, setActiveIndex] = useState(0);
   const [showAll, setShowAll] = useState(false);
   const [videoModalOpen, setVideoModalOpen] = useState(false);
+  const [descriptionModalOpen, setDescriptionModalOpen] = useState(false);
   const [touchStart, setTouchStart] = useState<number | null>(null);
   const [touchEnd, setTouchEnd] = useState<number | null>(null);
 
@@ -286,7 +304,52 @@ export default function ProjectDetail() {
           <div className="row">
             <div className="col-lg-6 m-a">
                               <div className="blr-title">{project.title}</div>
-              <ReactMarkdown>{project.description || ''}</ReactMarkdown>
+              <div className="project-description">
+                {project.description ? (
+                  (() => {
+                    const { text: truncatedText, isTruncated } = truncateText(project.description, 40);
+                    return (
+                      <div>
+                        {isTruncated ? (
+                          <>
+                            {renderHTML(truncatedText)}
+                            <button 
+                              onClick={() => setDescriptionModalOpen(true)}
+                              style={{
+                                background: 'linear-gradient(135deg, #1a2236 0%, #2d3748 100%)',
+                                color: 'white',
+                                border: 'none',
+                                padding: '12px 24px',
+                                borderRadius: '8px',
+                                fontSize: '14px',
+                                fontWeight: '600',
+                                cursor: 'pointer',
+                                marginTop: '16px',
+                                transition: 'all 0.3s ease',
+                                boxShadow: '0 4px 12px rgba(26, 34, 54, 0.2)'
+                              }}
+                              onMouseEnter={(e) => {
+                                e.currentTarget.style.transform = 'translateY(-2px)';
+                                e.currentTarget.style.boxShadow = '0 6px 16px rgba(26, 34, 54, 0.3)';
+                              }}
+                              onMouseLeave={(e) => {
+                                e.currentTarget.style.transform = 'translateY(0)';
+                                e.currentTarget.style.boxShadow = '0 4px 12px rgba(26, 34, 54, 0.2)';
+                              }}
+                            >
+                              Devamını Gör
+                            </button>
+                          </>
+                        ) : (
+                          renderHTML(project.description)
+                        )}
+                      </div>
+                    );
+                  })()
+                ) : (
+                  <ReactMarkdown>{project.description || ''}</ReactMarkdown>
+                )}
+              </div>
               {project.catalog && (
                 <a href={project.catalog} target="_blank" className="btn btn-blue mt-14" rel="noopener noreferrer">
                   <i className="fa-solid fa-file-pdf pr-12"></i>
@@ -581,6 +644,97 @@ export default function ProjectDetail() {
                 ))}
               </div>
             )}
+          </div>
+        </div>
+      )}
+
+      {/* Açıklama Modalı */}
+      {descriptionModalOpen && project.description && (
+        <div style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          width: '100vw',
+          height: '100vh',
+          background: 'rgba(0,0,0,0.85)',
+          zIndex: 99999,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          padding: '20px'
+        }}
+        onClick={() => setDescriptionModalOpen(false)}
+        >
+          <div style={{ 
+            position: 'relative', 
+            maxWidth: '800px', 
+            maxHeight: '80vh', 
+            background: '#fff', 
+            borderRadius: 16,
+            padding: '40px',
+            overflow: 'auto',
+            boxShadow: '0 20px 60px rgba(0,0,0,0.3)'
+          }} 
+          onClick={e => e.stopPropagation()}
+          >
+            <button
+              style={{
+                position: 'absolute',
+                top: 16,
+                right: 16,
+                background: 'rgba(0,0,0,0.1)',
+                color: '#333',
+                border: 'none',
+                borderRadius: '50%',
+                width: 40,
+                height: 40,
+                fontSize: 24,
+                cursor: 'pointer',
+                zIndex: 2,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                transition: 'all 0.2s ease'
+              }}
+              onClick={() => setDescriptionModalOpen(false)}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.background = 'rgba(0,0,0,0.2)';
+                e.currentTarget.style.transform = 'scale(1.1)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.background = 'rgba(0,0,0,0.1)';
+                e.currentTarget.style.transform = 'scale(1)';
+              }}
+              aria-label="Kapat"
+            >×</button>
+            
+            <div style={{ marginBottom: '24px' }}>
+              <h2 style={{ 
+                fontSize: '28px', 
+                fontWeight: '700', 
+                color: '#1a2236',
+                marginBottom: '16px',
+                fontFamily: 'Arbutus Slab, serif'
+              }}>
+                {project.title}
+              </h2>
+              <div style={{ 
+                width: '60px', 
+                height: '4px', 
+                background: 'linear-gradient(135deg, #e6d09c 0%, #d4af37 100%)',
+                borderRadius: '2px',
+                marginBottom: '24px'
+              }}></div>
+            </div>
+            
+            <div style={{ 
+              fontSize: '16px', 
+              lineHeight: '1.8', 
+              color: '#374151',
+              fontFamily: 'Inter, sans-serif'
+            }}>
+              {renderHTML(project.description)}
+            </div>
           </div>
         </div>
       )}

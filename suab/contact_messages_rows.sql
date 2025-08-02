@@ -1,0 +1,1 @@
+INSERT INTO "public"."contact_messages" ("id", "name", "email", "phone", "message", "created_at") VALUES ('1', 'deneme', 'denem@gmail.com', '05395393939', 'eeeee', '2025-07-22 04:52:25.459985+00');

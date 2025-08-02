@@ -55,7 +55,7 @@ const Projects: React.FC = () => {
           background: '#f7f7f7'
         }}>
           <img
-            className="ai-test-image"
+            className="project-image"
             src={images[0]}
             alt={title}
             style={{
@@ -71,7 +71,7 @@ const Projects: React.FC = () => {
             }}
           />
           <img
-            className="ai-test-image"
+            className="project-image"
             src={images[1]}
             alt={title}
             style={{
@@ -93,8 +93,8 @@ const Projects: React.FC = () => {
     return (
       <Box sx={{ width: '100%', height: 220, overflow: 'hidden', position: 'relative', background: '#f7f7f7' }}>
         <img
-          className="ai-test-image"
-          src={images && images.length > 0 ? images[0] : '/front/gorsel/genel/blr-insaat-2.jpg'}
+          className="project-image"
+          src={images && images.length > 0 ? images[0] : '/front/gorsel/genel/logo.png'}
           alt={title}
           style={{ width: '100%', height: '220px', objectFit: 'cover', display: 'block', borderTopLeftRadius: 4, borderTopRightRadius: 4 }}
         />

@@ -84,21 +84,21 @@ const Contact: React.FC = () => {
           console.error('Site ayarları yükleme hatası:', settingsError);
           // Hata durumunda varsayılan değerler kullan
           setSocialMedia({
-            facebookUrl: 'https://facebook.com',
-            instagramUrl: 'https://instagram.com',
+            facebookUrl: 'https://www.facebook.com/profile.php?id=61579125501611',
+            instagramUrl: 'https://www.instagram.com/blryapiinsaat/',
             youtubeUrl: 'https://youtube.com'
           });
         } else if (settingsData) {
           setSocialMedia({
-            facebookUrl: settingsData.facebook_url || 'https://facebook.com',
-            instagramUrl: settingsData.instagram_url || 'https://instagram.com',
+            facebookUrl: settingsData.facebook_url || 'https://www.facebook.com/profile.php?id=61579125501611',
+            instagramUrl: settingsData.instagram_url || 'https://www.instagram.com/blryapiinsaat/',
             youtubeUrl: settingsData.youtube_url || 'https://youtube.com'
           });
         } else {
           // Veri yoksa varsayılan URL'ler
           setSocialMedia({
-            facebookUrl: 'https://facebook.com',
-            instagramUrl: 'https://instagram.com',
+            facebookUrl: 'https://www.facebook.com/profile.php?id=61579125501611',
+            instagramUrl: 'https://www.instagram.com/blryapiinsaat/',
             youtubeUrl: 'https://youtube.com'
           });
         }
@@ -198,7 +198,7 @@ const Contact: React.FC = () => {
               </p>
               {/* İletişim bilgileri - her zaman basit metin formatında */}
               <div style={{ color: '#fff', fontSize: 16, lineHeight: 1.8, marginBottom: 32 }}>
-                <div style={{ marginBottom: 8 }}>Adres: REŞADİYE MAHALLESİ ATATÜRK BULVARI CADDESİ NO:48/D ÇORLU/TEKİRDAĞ BİLİR İNŞAAT</div>
+                <div style={{ marginBottom: 8 }}>Adres: REŞADİYE MAHALLESİ ATATÜRK BULVARI CADDESİ NO:48/D ÇORLU/TEKİRDAĞ BLR İNŞAAT</div>
                 <div style={{ marginBottom: 8 }}>Telefon: 0533 368 1965</div>
                 <div style={{ marginBottom: 8 }}>E-posta: iletisim@blrinsaat.com</div>
               </div>

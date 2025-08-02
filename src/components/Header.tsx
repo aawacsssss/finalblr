@@ -52,6 +52,18 @@ const Header: React.FC = () => {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
+  // ESC tuşu ile mobil menüyü kapatma
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && isMobileMenuOpen) {
+        setIsMobileMenuOpen(false);
+      }
+    };
+    
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isMobileMenuOpen]);
+
   useEffect(() => {
     const fetchHeaderContent = async () => {
       try {
@@ -76,11 +88,8 @@ const Header: React.FC = () => {
           }))
         });
 
-        if (logoContent?.images && logoContent.images.length > 0) {
-          setHeaderLogo(logoContent.images[0]);
-        } else {
-          setHeaderLogo(DEFAULT_LOGO);
-        }
+        // Her zaman varsayılan logo kullan - Supabase'den logo çekme
+        setHeaderLogo(DEFAULT_LOGO);
 
         // Sosyal medya ayarlarını çek
         const { data: settingsData, error: settingsError } = await supabase
@@ -93,29 +102,25 @@ const Header: React.FC = () => {
           console.error('Site ayarları yükleme hatası:', settingsError);
           // Hata durumunda varsayılan değerler kullan
           setSocialMedia({
-            facebookUrl: 'https://facebook.com',
-            instagramUrl: 'https://instagram.com',
+            facebookUrl: 'https://www.facebook.com/profile.php?id=61579125501611',
+            instagramUrl: 'https://www.instagram.com/blryapiinsaat/',
             youtubeUrl: 'https://youtube.com'
           });
           setHeaderLogo(DEFAULT_LOGO);
         } else if (settingsData) {
           setSocialMedia({
-            facebookUrl: settingsData.facebook_url || 'https://facebook.com',
-            instagramUrl: settingsData.instagram_url || 'https://instagram.com',
+            facebookUrl: settingsData.facebook_url || 'https://www.facebook.com/profile.php?id=61579125501611',
+            instagramUrl: settingsData.instagram_url || 'https://www.instagram.com/blryapiinsaat/',
             youtubeUrl: settingsData.youtube_url || 'https://youtube.com'
           });
           
-          // Logo yükleme sistemi - sadece site_settings kullan
-          if (settingsData.facebook_url && settingsData.facebook_url.startsWith('HEADER_LOGO_DATA:')) {
-            setHeaderLogo(settingsData.facebook_url.replace('HEADER_LOGO_DATA:', ''));
-          } else {
-            setHeaderLogo(DEFAULT_LOGO);
-          }
+          // Her zaman varsayılan logo kullan
+          setHeaderLogo(DEFAULT_LOGO);
         } else {
           // Veri yoksa varsayılan URL'ler
           setSocialMedia({
-            facebookUrl: 'https://facebook.com',
-            instagramUrl: 'https://instagram.com',
+            facebookUrl: 'https://www.facebook.com/profile.php?id=61579125501611',
+            instagramUrl: 'https://www.instagram.com/blryapiinsaat/',
             youtubeUrl: 'https://youtube.com'
           });
           setHeaderLogo(DEFAULT_LOGO);
@@ -137,19 +142,7 @@ const Header: React.FC = () => {
     setLogoError('Header logosu görseli yüklenemedi!');
   };
 
-  if (loading) {
-    return (
-      <header className="header-2">
-        <div className="container">
-          <div className="header-top-2">
-            <div className="logo">
-              <img src="/front/gorsel/genel/logo.png" alt="BLR İnşaat" style={{ height: 120, maxWidth: '340px', objectFit: 'contain', padding: 0, margin: 0, display: 'block' }} />
-            </div>
-          </div>
-        </div>
-      </header>
-    );
-  }
+
 
   return (
     <>
@@ -158,11 +151,11 @@ const Header: React.FC = () => {
       )}
       
       {/* Desktop Header - Statik HTML'deki gibi */}
-      <header id="main-header" className={`header-2 header ${isScrolled ? 'hidden' : ''}`} style={{ padding: '0px 0', overflow: 'visible' }}>
+      <header id="main-header" className={`header-2 header ${isScrolled ? 'hidden' : ''}`} style={{ padding: '0px 0', overflow: 'visible', position: 'fixed', top: 0, left: 0, right: 0, zIndex: 1000, background: '#fff', boxShadow: '0 2px 10px rgba(0,0,0,0.1)' }}>
         <div className="container">
           <div className="header-top-2" style={{ marginBottom: 0, paddingBottom: 0 }}>
             <Link to="/" className="logo" style={{ overflow: 'visible' }}>
-              <img src={headerLogo} alt={headerContent.logo?.title || "BLR İnşaat"} onError={handleImgError} style={{ height: 140, maxWidth: '340px', objectFit: 'contain', padding: 0, margin: 0, display: 'block' }} />
+              <img src={headerLogo} alt={headerContent.logo?.title || "BLR İnşaat"} onError={handleImgError} style={{ height: 120, maxWidth: '300px', objectFit: 'contain', padding: 0, margin: 0, display: 'block' }} />
             </Link>
             
             <nav className="header-nav-2">
@@ -208,6 +201,7 @@ const Header: React.FC = () => {
                            }}
                          >
                            <li style={{ width: '100%' }}><Link to="/hakkimizda" style={{ display: 'block', width: '100%', padding: '12px 24px', textAlign: 'left', fontWeight: 500, color: '#232617', borderBottom: '1px solid #f0f0f0', textDecoration: 'none' }}>Hakkımızda</Link></li>
+                           <li style={{ width: '100%' }}><Link to="/faaliyet-alanlari" style={{ display: 'block', width: '100%', padding: '12px 24px', textAlign: 'left', fontWeight: 500, color: '#232617', borderBottom: '1px solid #f0f0f0', textDecoration: 'none' }}>Faaliyet Alanlarımız</Link></li>
                            <li style={{ width: '100%' }}><Link to="/sefa-kalkan" style={{ display: 'block', width: '100%', padding: '12px 24px', textAlign: 'left', fontWeight: 500, color: '#232617', borderBottom: '1px solid #f0f0f0', textDecoration: 'none' }}>Nurettin Bilir</Link></li>
                            <li style={{ width: '100%' }}><Link to="/hakkimizda#ofisimiz" style={{ display: 'block', width: '100%', padding: '12px 24px', textAlign: 'left', fontWeight: 500, color: '#232617', textDecoration: 'none' }}>Ofis Konumumuz</Link></li>
                          </ul>
@@ -275,11 +269,11 @@ const Header: React.FC = () => {
       </header>
 
       {/* Mobile Header - Statik HTML'deki gibi */}
-      <header className="header-mobile" style={{ padding: '0px 0', overflow: 'visible' }}>
+      <header className="header-mobile" style={{ padding: '0px 0', overflow: 'visible', position: 'fixed', top: 0, left: 0, right: 0, zIndex: 1000, background: '#fff', boxShadow: '0 2px 10px rgba(0,0,0,0.1)' }}>
         <div className="container">
           <div className="header-mobile-area">
             <Link to="/" style={{ overflow: 'visible' }}>
-              <img src={headerLogo} alt={headerContent.logo?.title || "BLR İnşaat"} onError={handleImgError} style={{ height: 100, maxWidth: '220px', objectFit: 'contain', padding: 0, margin: 0, display: 'block' }} />
+              <img src={headerLogo} alt={headerContent.logo?.title || "BLR İnşaat"} onError={handleImgError} style={{ height: 90, maxWidth: '220px', objectFit: 'contain', padding: 0, margin: 0, display: 'block' }} />
             </Link>
             <div className="bars" onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}>
               MENÜ <i className="fa-solid fa-bars-staggered"></i>
@@ -290,15 +284,22 @@ const Header: React.FC = () => {
 
       {/* Mobile Menu Modal - Statik HTML'deki gibi */}
       {isMobileMenuOpen && (
-        <div className="modal left fade show" style={{ display: 'block' }} id="leftPopup">
+        <div 
+          className="modal left fade show" 
+          style={{ display: 'block' }} 
+          id="leftPopup"
+          onClick={(e) => {
+            if (e.target === e.currentTarget) {
+              setIsMobileMenuOpen(false);
+            }
+          }}
+        >
           <div className="modal-dialog">
             <div className="modal-content">
               <div className="modal-header">
-                <img src={headerLogo} alt={headerContent.logo?.title || "BLR İnşaat"} onError={handleImgError} style={{ height: 120, maxWidth: '340px', objectFit: 'contain', padding: 0, margin: 0, display: 'block' }} />
-                <button type="button" className="close" onClick={() => setIsMobileMenuOpen(false)}>
-                  <span aria-hidden="true">&times;</span>
-                </button>
+                <img src={headerLogo} alt={headerContent.logo?.title || "BLR İnşaat"} onError={handleImgError} style={{ height: 110, maxWidth: '280px', objectFit: 'contain', padding: 0, margin: 0, display: 'block' }} />
               </div>
+
               <div className="modal-body">
                 <div className="mobile-nav-menu">
                   <ul>
@@ -320,8 +321,9 @@ const Header: React.FC = () => {
                         background: 'white'
                       }}>
                         <li style={{ border: 'none' }}><Link to="/hakkimizda" onClick={() => setIsMobileMenuOpen(false)} style={{ padding: '10px 0', display: 'block' }}>• Hakkımızda</Link></li>
-                                                 <li style={{ border: 'none' }}><Link to="/sefa-kalkan" onClick={() => setIsMobileMenuOpen(false)} style={{ padding: '10px 0', display: 'block' }}>• Nurettin Bilir</Link></li>
-                         <li style={{ border: 'none' }}><Link to="/hakkimizda#ofisimiz" onClick={() => setIsMobileMenuOpen(false)} style={{ padding: '10px 0', display: 'block' }}>• Ofis Konumumuz</Link></li>
+                        <li style={{ border: 'none' }}><Link to="/faaliyet-alanlari" onClick={() => setIsMobileMenuOpen(false)} style={{ padding: '10px 0', display: 'block' }}>• Faaliyet Alanlarımız</Link></li>
+                        <li style={{ border: 'none' }}><Link to="/sefa-kalkan" onClick={() => setIsMobileMenuOpen(false)} style={{ padding: '10px 0', display: 'block' }}>• Nurettin Bilir</Link></li>
+                        <li style={{ border: 'none' }}><Link to="/hakkimizda#ofisimiz" onClick={() => setIsMobileMenuOpen(false)} style={{ padding: '10px 0', display: 'block' }}>• Ofis Konumumuz</Link></li>
                       </ul>
                     </li>
                     <li className="sub-menu" style={{ position: 'relative' }}>
@@ -347,6 +349,42 @@ const Header: React.FC = () => {
                     </li>
                     <li><Link to="/iletisim" onClick={() => setIsMobileMenuOpen(false)}>İLETİŞİM</Link></li>
                   </ul>
+                  
+                  {/* Alt kapatma butonu */}
+                  <div style={{
+                    marginTop: '30px',
+                    textAlign: 'center',
+                    padding: '20px 0',
+                    borderTop: '1px solid #eee'
+                  }}>
+                    <button 
+                      onClick={() => setIsMobileMenuOpen(false)}
+                      style={{
+                        background: '#232617',
+                        color: '#fff',
+                        border: 'none',
+                        borderRadius: '25px',
+                        padding: '12px 30px',
+                        fontSize: '16px',
+                        fontWeight: '600',
+                        cursor: 'pointer',
+                        boxShadow: '0 2px 10px rgba(0,0,0,0.2)',
+                        transition: 'all 0.3s ease',
+                        width: '100%',
+                        maxWidth: '200px'
+                      }}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.transform = 'translateY(-2px)';
+                        e.currentTarget.style.boxShadow = '0 4px 15px rgba(0,0,0,0.3)';
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.transform = 'translateY(0)';
+                        e.currentTarget.style.boxShadow = '0 2px 10px rgba(0,0,0,0.2)';
+                      }}
+                    >
+                      Menüyü Kapat
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>
