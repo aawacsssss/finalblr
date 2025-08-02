@@ -110,7 +110,8 @@ const OngoingProjects: React.FC = () => {
             <div className="row">
               {projects.map((project) => (
                 <div key={project.id} className="col-lg-4 col-md-6 mb-4 d-flex">
-                                     <div className="p-9" style={{ background: '#fff', borderRadius: 28, boxShadow: '0 8px 32px #0002', padding: 28, transition: 'box-shadow 0.2s, transform 0.2s', height: '100%', width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'space-between' }}>
+                  <Link to={`/proje/${project.id}`} style={{ textDecoration: 'none', width: '100%' }}>
+                    <div className="p-9" style={{ background: '#fff', borderRadius: 28, boxShadow: '0 8px 32px #0002', padding: 28, transition: 'box-shadow 0.2s, transform 0.2s', height: '100%', width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'space-between', cursor: 'pointer' }}>
                      <div style={{ width: '100%' }}>
                        <div style={{ borderRadius: 24, overflow: 'hidden', boxShadow: '0 2px 12px #0001', marginBottom: 18, transition: 'box-shadow 0.2s, transform 0.2s' }}>
                                                  <div style={{ width: '100%', height: 240, background: '#f5f5f5', display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: 24 }}>
@@ -150,9 +151,7 @@ const OngoingProjects: React.FC = () => {
                         </div>
                        </div>
                        <div style={{ textAlign: 'center' }}>
-                         <Link to={`/proje/${project.id}`} style={{ textDecoration: 'none' }}>
-                           <div style={{ fontFamily: 'Poppins, Montserrat, Inter, Roboto, Arial, sans-serif', fontWeight: 700, fontSize: 24, color: '#232617', letterSpacing: 1, marginBottom: 8, cursor: 'pointer' }}>{project.title}</div>
-                         </Link>
+                         <div style={{ fontFamily: 'Poppins, Montserrat, Inter, Roboto, Arial, sans-serif', fontWeight: 700, fontSize: 24, color: '#232617', letterSpacing: 1, marginBottom: 8 }}>{project.title}</div>
                          {project.description && (
                            <div style={{ color: '#666', fontSize: '14px', lineHeight: 1.5, margin: '8px 0' }}>
                              {(() => {
@@ -221,6 +220,7 @@ const OngoingProjects: React.FC = () => {
                        </span>
                      </div>
                   </div>
+                </Link>
                 </div>
               ))}
             </div>
