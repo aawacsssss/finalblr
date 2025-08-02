@@ -954,13 +954,16 @@ const handleDeleteContent = async (id: number) => {
       const fallbackField = type === 'header' ? 'facebook_url' : 'instagram_url';
       const prefix = type === 'header' ? 'HEADER_LOGO_DATA:' : 'FOOTER_LOGO_DATA:';
       
-      const { error: fallbackError } = await supabase
+      const { data, error } = await supabase
         .from('site_settings')
         .upsert({
           [fallbackField]: prefix + base64Data,
         });
       
-      if (fallbackError) throw fallbackError;
+      if (error) {
+        console.error('Supabase hatası:', error);
+        throw new Error(`Logo yükleme hatası: ${error.message}`);
+      }
       
       // State'i güncelle
       setSettings(prev => ({
@@ -971,7 +974,8 @@ const handleDeleteContent = async (id: number) => {
       alert(`${type === 'header' ? 'Header' : 'Footer'} logosu başarıyla yüklendi!`);
     } catch (error) {
       console.error('Logo yükleme hatası:', error);
-      alert('Logo yükleme hatası!');
+      const errorMessage = error instanceof Error ? error.message : 'Bilinmeyen hata';
+      alert(`Logo yükleme hatası: ${errorMessage}`);
     }
   };
 
