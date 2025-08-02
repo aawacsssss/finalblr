@@ -954,11 +954,24 @@ const handleDeleteContent = async (id: number) => {
       const fallbackField = type === 'header' ? 'facebook_url' : 'instagram_url';
       const prefix = type === 'header' ? 'HEADER_LOGO_DATA:' : 'FOOTER_LOGO_DATA:';
       
+      // Önce mevcut ayarları kontrol et
+      const { data: existingSettings } = await supabase
+        .from('site_settings')
+        .select('*')
+        .limit(1);
+      
+      let upsertData: any = {
+        [fallbackField]: prefix + base64Data,
+      };
+      
+      // Eğer mevcut ayar varsa, id'sini ekle
+      if (existingSettings && existingSettings.length > 0) {
+        upsertData.id = existingSettings[0].id;
+      }
+      
       const { data, error } = await supabase
         .from('site_settings')
-        .upsert({
-          [fallbackField]: prefix + base64Data,
-        });
+        .upsert(upsertData);
       
       if (error) {
         console.error('Supabase hatası:', error);
