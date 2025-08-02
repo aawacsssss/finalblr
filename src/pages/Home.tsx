@@ -16,24 +16,24 @@ const Home: React.FC = () => {
   const [activeSlideIndex, setActiveSlideIndex] = useState(0);
   const [headerHeight, setHeaderHeight] = useState(0);
 
-  const loadData = async () => {
-    try {
-      const [slidersData, contentsData] = await Promise.all([
-        sliderService.getAll(),
-        siteContentService.getByPage('home')
-      ]);
-
+    const loadData = async () => {
+      try {
+        const [slidersData, contentsData] = await Promise.all([
+          sliderService.getAll(),
+          siteContentService.getByPage('home')
+        ]);
+        
       setSliders(slidersData || []);
       setHomeContents(contentsData || []);
       setDataLoaded(true);
       
 
-    } catch (error) {
+      } catch (error) {
       // Silent error handling
-    } finally {
-      setLoading(false);
-    }
-  };
+      } finally {
+        setLoading(false);
+      }
+    };
 
   useEffect(() => {
     loadData();
@@ -470,21 +470,21 @@ const Home: React.FC = () => {
           >
             {sliders.map((slide, index) => {
               return (
-                <SwiperSlide key={slide.id}>
+              <SwiperSlide key={slide.id}>
                   <Link to={`/proje/${slide.project_id || (slide.link?.match(/\/proje\/(\d+)/)?.[1] || slide.id)}`} style={{ display: 'block', width: '100%', height: '100%' }}>
-                    <img
-                      src={slide.image}
-                      alt={slide.title || 'Slider Image'}
-                                             style={{
-                         width: '100%',
-                         height: '100%',
+                  <img
+                    src={slide.image}
+                    alt={slide.title || 'Slider Image'}
+                    style={{
+                      width: '100%',
+                      height: '100%',
                          objectFit: window.innerWidth <= 768 ? 'cover' : (slide.image_fit || 'cover'),
-                         objectPosition: slide.image_position || 'center',
-                         backgroundColor: slide.background_color || '#f8f9fa'
-                       }}
-                    />
-                  </Link>
-                </SwiperSlide>
+                      objectPosition: slide.image_position || 'center',
+                      backgroundColor: slide.background_color || '#f8f9fa'
+                    }}
+                  />
+                </Link>
+              </SwiperSlide>
               )
             })}
           </Swiper>
@@ -504,21 +504,21 @@ const Home: React.FC = () => {
       </section>
 
             {/* Project Buttons - YENİ KONUM */}
-      <div
+        <div 
         className="yeni-butonlar-container"
-        style={{
-          display: 'flex',
-          justifyContent: 'center',
-          alignItems: 'center',
+          style={{
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
           gap: window.innerWidth <= 768 ? '8px' : '12px',
           padding: window.innerWidth <= 768 ? '10px 15px' : '15px 20px',
                                   background: 'none',
-          margin: '0',
+            margin: '0',
                               marginTop: window.innerWidth <= 768 ? '10px' : '10px',
-          width: '100%',
-          flexDirection: 'row',
-          transition: 'all 0.3s ease',
-          position: 'relative',
+            width: '100%',
+            flexDirection: 'row',
+            transition: 'all 0.3s ease',
+            position: 'relative',
           zIndex: 9999,
           visibility: 'visible',
           opacity: 1,
@@ -578,7 +578,7 @@ const Home: React.FC = () => {
         }) : (
           <>
             <div
-              style={{
+                style={{
                 background: 'rgba(35, 38, 23, 0.7)',
                 color: 'white',
                 padding: window.innerWidth <= 768 ? '8px 16px' : '12px 24px',
@@ -592,7 +592,7 @@ const Home: React.FC = () => {
                 transition: 'all 0.3s ease',
                 cursor: 'pointer',
                 whiteSpace: 'nowrap',
-                textAlign: 'center',
+                  textAlign: 'center',
                 minWidth: window.innerWidth <= 768 ? '100px' : '120px',
                 maxWidth: window.innerWidth <= 768 ? '100px' : '180px',
                 flex: window.innerWidth <= 768 ? '1' : 'auto'
@@ -624,7 +624,7 @@ const Home: React.FC = () => {
                 backdropFilter: 'blur(10px)',
                 border: '2px solid rgba(255,255,255,0.2)',
                 transition: 'all 0.3s ease',
-                cursor: 'pointer',
+                  cursor: 'pointer',
                 whiteSpace: 'nowrap',
                 textAlign: 'center',
                 minWidth: window.innerWidth <= 768 ? '100px' : '120px',
@@ -644,7 +644,7 @@ const Home: React.FC = () => {
               }}
             >
               Proje 2
-            </div>
+              </div>
             <div
               style={{
                 background: 'rgba(35, 38, 23, 0.7)',
@@ -678,10 +678,10 @@ const Home: React.FC = () => {
               }}
             >
               Proje 3
-            </div>
+        </div>
           </>
-        )}
-      </div>
+      )}
+        </div>
 
       {/* Modern içerik blokları */}
       <section style={{ background: '#fff', borderRadius: '32px', margin: '0 0 40px 0', boxShadow: '0 8px 32px #0001', padding: '70px 0' }}>

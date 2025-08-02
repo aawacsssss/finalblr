@@ -290,6 +290,18 @@ export async function uploadProjectImages(files: File[]): Promise<string[]> {
     urls.push(data.publicUrl);
   }
   return urls;
+}
+
+export async function uploadProjectVideo(file: File): Promise<string> {
+  // Dosya adını normalize et (Türkçe ve özel karakterleri sadeleştir)
+  const safeName = file.name
+    .replace(/[ÇŞİÖÜĞçşıöüğ ]/g, '_')
+    .replace(/[^a-zA-Z0-9_.-]/g, '_');
+  const filePath = `videos/${Date.now()}_${safeName}`;
+  const { error } = await supabase.storage.from('project-videos').upload(filePath, file);
+  if (error) throw error;
+  const { data } = supabase.storage.from('project-videos').getPublicUrl(filePath);
+  return data.publicUrl;
 } 
 
 export const visitService = {

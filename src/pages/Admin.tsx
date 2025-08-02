@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { projectService, sliderService, siteContentService, Project, Slider, SiteContent, siteSettingsService, SiteSettings } from '../services/supabaseService';
-import { uploadProjectImages } from '../services/supabaseService';
+import { uploadProjectImages, uploadProjectVideo } from '../services/supabaseService';
 import { visitService, Visit } from '../services/supabaseService';
 import { useTheme } from '@mui/material/styles';
 import { supabase } from '../services/supabaseClient';
@@ -2337,6 +2337,37 @@ const handleDeleteContent = async (id: number) => {
                           </Box>
                         </Grid>
                       </Grid>
+                      {/* Video yükleme */}
+                      <Box sx={{ mt: 2 }}>
+                        <Typography variant="body2" mb={1}>Video (isteğe bağlı):</Typography>
+                        <input
+                          type="file"
+                          accept="video/*"
+                          style={{ display: 'none' }}
+                          id="new-project-video-upload"
+                          onChange={async e => {
+                            if (e.target.files && e.target.files.length > 0) {
+                              const file = e.target.files[0];
+                              try {
+                                const url = await uploadProjectVideo(file);
+                                setEditingProject(prev => prev ? { ...prev, video: url } : prev);
+                              } catch (err) {
+                                alert('Video yüklenirken hata oluştu!');
+                              }
+                            }
+                          }}
+                        />
+                        <label htmlFor="new-project-video-upload">
+                          <Button variant="outlined" component="span" size="small" startIcon={<CloudUploadIcon />}>Video Yükle</Button>
+                        </label>
+                        {editingProject.video && (
+                          <Box sx={{ mt: 1 }}>
+                            <Typography variant="caption" color="success.main">✓ Video yüklendi</Typography>
+                            <Button size="small" color="error" onClick={() => setEditingProject(prev => prev ? { ...prev, video: undefined } : prev)}>Video Kaldır</Button>
+                          </Box>
+                        )}
+                      </Box>
+                      
                       {/* Görsel yükleme ve önizleme */}
                       <Box sx={{ mt: 2 }}>
                         <Typography variant="body2" mb={1}>Görseller:</Typography>
@@ -2463,6 +2494,44 @@ const handleDeleteContent = async (id: number) => {
                             marginBottom: '20px'
                           }}
                         />
+                      </Box>
+                      
+                      {/* Video alanı */}
+                      <Box>
+                        <Typography variant="body2" mb={1}>Video URL (isteğe bağlı):</Typography>
+                        <TextField
+                          label="Video URL"
+                          value={editingProject.video || ''}
+                          onChange={e => setEditingProject({ ...editingProject, video: e.target.value })}
+                          fullWidth
+                          placeholder="https://example.com/video.mp4"
+                        />
+                        <input
+                          type="file"
+                          accept="video/*"
+                          style={{ display: 'none' }}
+                          id="editing-project-video-upload"
+                          onChange={async e => {
+                            if (e.target.files && e.target.files.length > 0) {
+                              const file = e.target.files[0];
+                              try {
+                                const url = await uploadProjectVideo(file);
+                                setEditingProject(prev => prev ? { ...prev, video: url } : prev);
+                              } catch (err) {
+                                alert('Video yüklenirken hata oluştu!');
+                              }
+                            }
+                          }}
+                        />
+                        <label htmlFor="editing-project-video-upload">
+                          <Button variant="outlined" component="span" size="small" startIcon={<CloudUploadIcon />} sx={{ mt: 1 }}>Video Yükle</Button>
+                        </label>
+                        {editingProject.video && (
+                          <Box sx={{ mt: 1 }}>
+                            <Typography variant="caption" color="success.main">✓ Video mevcut</Typography>
+                            <Button size="small" color="error" onClick={() => setEditingProject(prev => prev ? { ...prev, video: undefined } : prev)}>Video Kaldır</Button>
+                          </Box>
+                        )}
                       </Box>
                       {/* Çoklu görsel alanı */}
                       <Box sx={{ gridColumn: { xs: '1', md: '1 / span 2' } }}>

@@ -73,9 +73,7 @@ export default function ProjectDetail() {
   }, [id]);
 
   useEffect(() => {
-    if (project?.video) {
-      setVideoModalOpen(true);
-    }
+    // Video otomatik açılmasını kaldırdık
   }, [project]);
 
   // ESC ve sağ/sol ok ile lightbox kontrolü
@@ -304,6 +302,42 @@ export default function ProjectDetail() {
           <div className="row">
             <div className="col-lg-6 m-a">
                               <div className="blr-title">{project.title}</div>
+              
+              {/* Video butonu */}
+              {project.video && (
+                <div style={{ marginBottom: '20px' }}>
+                  <button 
+                    onClick={() => setVideoModalOpen(true)}
+                    style={{
+                      background: 'linear-gradient(135deg, #dc2626 0%, #b91c1c 100%)',
+                      color: 'white',
+                      border: 'none',
+                      padding: '12px 24px',
+                      borderRadius: '8px',
+                      fontSize: '14px',
+                      fontWeight: '600',
+                      cursor: 'pointer',
+                      transition: 'all 0.3s ease',
+                      boxShadow: '0 4px 12px rgba(220, 38, 38, 0.2)',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '8px'
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.transform = 'translateY(-2px)';
+                      e.currentTarget.style.boxShadow = '0 6px 16px rgba(220, 38, 38, 0.3)';
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.transform = 'translateY(0)';
+                      e.currentTarget.style.boxShadow = '0 4px 12px rgba(220, 38, 38, 0.2)';
+                    }}
+                  >
+                    <i className="fa-solid fa-play" style={{ fontSize: '12px' }}></i>
+                    Proje Videosunu İzle
+                  </button>
+                </div>
+              )}
+              
               <div className="project-description">
                 {project.description ? (
                   (() => {
