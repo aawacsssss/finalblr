@@ -68,17 +68,22 @@ const SefaKalkan: React.FC = () => {
             <div className="row">
               <div className="p-2">
                 <div className="row">
-                  <div className="col-lg-4">
+                  <div className="col-lg-3">
                     <Link to="/hakkimizda">
                       <div className="ic-btn text-center p-3">Hakkımızda</div>
                     </Link>
                   </div>
-                                     <div className="col-lg-4">
+                  <div className="col-lg-3">
+                    <Link to="/faaliyet-alanlari">
+                      <div className="ic-btn text-center p-3">Faaliyet Alanları</div>
+                    </Link>
+                  </div>
+                                     <div className="col-lg-3">
                      <Link to="/nurettin-bilir">
                        <div className="ic-btn-2 text-center p-3">Nurettin Bilir</div>
                      </Link>
                    </div>
-                  <div className="col-lg-4">
+                  <div className="col-lg-3">
                     <a href="/hakkimizda#ofisimiz" onClick={(e) => {
                       e.preventDefault();
                       window.location.href = '/hakkimizda#ofisimiz';

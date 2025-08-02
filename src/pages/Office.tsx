@@ -50,23 +50,28 @@ const Office: React.FC = () => {
         <div className="container">
           <div className="row">
             <div className="p-2">
-              <div className="row">
-                <div className="col-lg-4">
-                  <Link to="/hakkimizda">
-                    <div className="ic-btn text-center p-3">Hakkımızda</div>
-                  </Link>
+                              <div className="row">
+                  <div className="col-lg-3">
+                    <Link to="/hakkimizda">
+                      <div className="ic-btn text-center p-3">Hakkımızda</div>
+                    </Link>
+                  </div>
+                  <div className="col-lg-3">
+                    <Link to="/faaliyet-alanlari">
+                      <div className="ic-btn text-center p-3">Faaliyet Alanları</div>
+                    </Link>
+                  </div>
+                  <div className="col-lg-3">
+                    <Link to="/nurettin-bilir">
+                                          <div className="ic-btn text-center p-3">Nurettin Bilir</div>
+                    </Link>
+                  </div>
+                  <div className="col-lg-3">
+                                   <Link to="/ofis">
+                   <div className="ic-btn-2 text-center p-3">Ofis</div>
+                 </Link>
+                  </div>
                 </div>
-                <div className="col-lg-4">
-                                  <Link to="/nurettin-bilir">
-                  <div className="ic-btn text-center p-3">Nurettin Bilir</div>
-                </Link>
-                </div>
-                <div className="col-lg-4">
-                  <Link to="/ofis">
-                    <div className="ic-btn-2 text-center p-3">Ofis</div>
-                  </Link>
-                </div>
-              </div>
             </div>
           </div>
         </div>
