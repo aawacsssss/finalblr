@@ -57,9 +57,9 @@ const Office: React.FC = () => {
                   </Link>
                 </div>
                 <div className="col-lg-4">
-                  <Link to="/sefa-kalkan">
-                                         <div className="ic-btn text-center p-3">Nurettin Bilir</div>
-                  </Link>
+                                  <Link to="/nurettin-bilir">
+                  <div className="ic-btn text-center p-3">Nurettin Bilir</div>
+                </Link>
                 </div>
                 <div className="col-lg-4">
                   <Link to="/ofis">

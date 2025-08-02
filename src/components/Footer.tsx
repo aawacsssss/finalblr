@@ -171,7 +171,7 @@ const Footer: React.FC = () => {
                 <li style={{ marginBottom: '1rem' }}><Link to="/" style={{ color: '#e0e0e0', textDecoration: 'none' }}>Anasayfa</Link></li>
                 <li style={{ marginBottom: '1rem' }}><a href="/baslanacak-projeler" style={{ color: '#e0e0e0', textDecoration: 'none' }}>Projelerimiz</a></li>
                 <li style={{ marginBottom: '1rem' }}><a href="/hakkimizda" style={{ color: '#e0e0e0', textDecoration: 'none' }}>Hakkımızda</a></li>
-                <li style={{ marginBottom: '1rem' }}><Link to="/sefa-kalkan" style={{ color: '#e0e0e0', textDecoration: 'none' }}>Nurettin Bilir</Link></li>
+                <li style={{ marginBottom: '1rem' }}><Link to="/nurettin-bilir" style={{ color: '#e0e0e0', textDecoration: 'none' }}>Nurettin Bilir</Link></li>
                 <li style={{ marginBottom: '1rem' }}><a href="/hakkimizda#ofisimiz" style={{ color: '#e0e0e0', textDecoration: 'none' }}>Ofisimiz</a></li>
                 <li style={{ marginBottom: '1rem' }}><Link to="/iletisim" style={{ color: '#e0e0e0', textDecoration: 'none' }}>İletişim</Link></li>
               </ul>

@@ -34,7 +34,7 @@ function AppRoutesWithLayout() {
           <Route path="/baslanacak-projeler" element={<UpcomingProjects />} />
           <Route path="/hakkimizda" element={<About />} />
           <Route path="/faaliyet-alanlari" element={<FaaliyetAlanlari />} />
-          <Route path="/sefa-kalkan" element={<SefaKalkan />} />
+          <Route path="/nurettin-bilir" element={<SefaKalkan />} />
           <Route path="/ofis" element={<Office />} />
           <Route path="/iletisim" element={<Contact />} />
           <Route path="/admin" element={<Admin />} />

@@ -74,7 +74,7 @@ const SefaKalkan: React.FC = () => {
                     </Link>
                   </div>
                                      <div className="col-lg-4">
-                     <Link to="/sefa-kalkan">
+                     <Link to="/nurettin-bilir">
                        <div className="ic-btn-2 text-center p-3">Nurettin Bilir</div>
                      </Link>
                    </div>

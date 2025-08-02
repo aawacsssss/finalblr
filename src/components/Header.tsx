@@ -202,7 +202,7 @@ const Header: React.FC = () => {
                          >
                            <li style={{ width: '100%' }}><Link to="/hakkimizda" style={{ display: 'block', width: '100%', padding: '12px 24px', textAlign: 'left', fontWeight: 500, color: '#232617', borderBottom: '1px solid #f0f0f0', textDecoration: 'none' }}>Hakkımızda</Link></li>
                            <li style={{ width: '100%' }}><Link to="/faaliyet-alanlari" style={{ display: 'block', width: '100%', padding: '12px 24px', textAlign: 'left', fontWeight: 500, color: '#232617', borderBottom: '1px solid #f0f0f0', textDecoration: 'none' }}>Faaliyet Alanlarımız</Link></li>
-                           <li style={{ width: '100%' }}><Link to="/sefa-kalkan" style={{ display: 'block', width: '100%', padding: '12px 24px', textAlign: 'left', fontWeight: 500, color: '#232617', borderBottom: '1px solid #f0f0f0', textDecoration: 'none' }}>Nurettin Bilir</Link></li>
+                           <li style={{ width: '100%' }}><Link to="/nurettin-bilir" style={{ display: 'block', width: '100%', padding: '12px 24px', textAlign: 'left', fontWeight: 500, color: '#232617', borderBottom: '1px solid #f0f0f0', textDecoration: 'none' }}>Nurettin Bilir</Link></li>
                            <li style={{ width: '100%' }}><Link to="/hakkimizda#ofisimiz" style={{ display: 'block', width: '100%', padding: '12px 24px', textAlign: 'left', fontWeight: 500, color: '#232617', textDecoration: 'none' }}>Ofis Konumumuz</Link></li>
                          </ul>
                        )}
@@ -322,7 +322,7 @@ const Header: React.FC = () => {
                       }}>
                         <li style={{ border: 'none' }}><Link to="/hakkimizda" onClick={() => setIsMobileMenuOpen(false)} style={{ padding: '10px 0', display: 'block' }}>• Hakkımızda</Link></li>
                         <li style={{ border: 'none' }}><Link to="/faaliyet-alanlari" onClick={() => setIsMobileMenuOpen(false)} style={{ padding: '10px 0', display: 'block' }}>• Faaliyet Alanlarımız</Link></li>
-                        <li style={{ border: 'none' }}><Link to="/sefa-kalkan" onClick={() => setIsMobileMenuOpen(false)} style={{ padding: '10px 0', display: 'block' }}>• Nurettin Bilir</Link></li>
+                        <li style={{ border: 'none' }}><Link to="/nurettin-bilir" onClick={() => setIsMobileMenuOpen(false)} style={{ padding: '10px 0', display: 'block' }}>• Nurettin Bilir</Link></li>
                         <li style={{ border: 'none' }}><Link to="/hakkimizda#ofisimiz" onClick={() => setIsMobileMenuOpen(false)} style={{ padding: '10px 0', display: 'block' }}>• Ofis Konumumuz</Link></li>
                       </ul>
                     </li>

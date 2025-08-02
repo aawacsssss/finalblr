@@ -63,7 +63,7 @@ const FaaliyetAlanlari: React.FC = () => {
                     <div className="ic-btn-2 text-center p-3">Faaliyet Alanlarımız</div>
                   </div>
                   <div className="col-lg-4">
-                    <a href="/sefa-kalkan">
+                    <a href="/nurettin-bilir">
                       <div className="ic-btn text-center p-3">Nurettin Bilir</div>
                     </a>
                   </div>
