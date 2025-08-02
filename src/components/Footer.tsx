@@ -315,7 +315,7 @@ const Footer: React.FC = () => {
                   <span style={{ fontSize: 22, color: '#fff' }}><i className="fas fa-map-marker-alt"></i></span>
                   <div>
                     <div style={{ fontWeight: 600, fontSize: 15 }}>Adres</div>
-                    <a href="https://maps.app.goo.gl/usfTNp5Men9taey36" target="_blank" rel="noopener noreferrer" style={{ color: '#e0e0e0', textDecoration: 'none', fontSize: 15 }}>
+                    <a href="https://maps.app.goo.gl/pkb8EeUorxFch3897" target="_blank" rel="noopener noreferrer" style={{ color: '#e0e0e0', textDecoration: 'none', fontSize: 15 }}>
                       REŞADİYE MAHALLESİ ATATÜRK BULVARI CADDESİ NO:48/D ÇORLU/TEKİRDAĞ
                     </a>
                   </div>
